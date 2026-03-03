@@ -10,7 +10,7 @@ export function FooterStats() {
 
   return (
     <footer className="border-t border-border bg-panel/90 backdrop-blur-sm">
-      <div className="max-w-[1800px] mx-auto px-6 py-3">
+      <div className="px-6 py-3">
         <div className="grid grid-cols-6 gap-3">
           {stats.map((s) => (
             <div

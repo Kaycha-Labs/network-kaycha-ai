@@ -21,7 +21,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
       {/* Header */}
       <header className="border-b border-border bg-panel/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-[1800px] mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded bg-gradient-to-br from-accent to-green100g flex items-center justify-center text-bg font-bold text-sm">K</div>
             <div>
@@ -50,7 +50,7 @@ export default function App() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <div className="max-w-[1800px] mx-auto px-6 py-6">
+        <div className="px-6 py-6">
           {activeTab === 'physical' && <PhysicalView />}
           {activeTab === 'logical' && <LogicalView />}
           {activeTab === 'power' && <PowerView />}

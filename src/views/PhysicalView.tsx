@@ -96,7 +96,7 @@ export function PhysicalView() {
   return (
     <div className="space-y-4">
       <div className="overflow-x-auto">
-        <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full max-w-[1200px] mx-auto" style={{ minWidth: 900 }}>
+        <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full" style={{ minWidth: 900 }}>
           <defs>
             <filter id="glow-green">
               <feGaussianBlur stdDeviation="4" result="blur" />
