@@ -266,7 +266,7 @@ export function PipelineView() {
 
         <div className="flex justify-center gap-3 flex-wrap">
           <BranchColumn label="DISPATCH" color={C.red}>
-            <Node icon="🤖" title="Claude Code Workers" detail="Complex coding tasks. Multi-file changes. D-Score ≥ 0.55" file="worker-main, worker-jarvis3, worker-sentinel" variant="dispatch" />
+            <Node icon="🤖" title="Claude Code Workers" detail="Complex coding tasks. Multi-file changes. D-Score ≥ 0.55" file="worker-main, worker-jericho, worker-sentinel" variant="dispatch" />
             <Node icon="🤖" title="Ollama Workers" detail="D-Score < 0.55: qwen3.5-35b (simple) or qwen3.5-122b (medium). Local GPU on RTX 5090" file="Sentinel Ollama :11434" variant="dispatch" />
           </BranchColumn>
           <BranchColumn label="REVIEW" color={C.warning}>
@@ -281,7 +281,7 @@ export function PipelineView() {
         </div>
 
         <div className="mt-2 space-y-0.5">
-          <Sub><strong>Machine Topology:</strong> Jarvis2 (orchestrator + worker-main) · Jarvis3 (worker-jarvis3) · Sentinel/Jarvis (worker-sentinel, RTX 5090) · Happy (E2E test runner)</Sub>
+          <Sub><strong>Machine Topology:</strong> Iron-Patriot (orchestrator + worker-main) · Jericho (worker-jericho) · Sentinel (worker-sentinel, RTX 5090) · Happy (E2E test runner)</Sub>
           <Sub><strong>3-Tier Task Claiming:</strong> worker-targeted → machine-targeted → general pool</Sub>
         </div>
       </Phase>

@@ -77,8 +77,8 @@ export function PowerView() {
             </div>
           </div>
           <div className="space-y-3">
-            <PowerDevice name="Jarvis2" idle={180} peak={700} color={C.purple} />
-            <PowerDevice name="Jarvis3" idle={180} peak={700} color={C.purple} />
+            <PowerDevice name="Iron-Patriot" idle={180} peak={700} color={C.purple} />
+            <PowerDevice name="Jericho" idle={180} peak={700} color={C.purple} />
             <div className="pt-2" />
             <ProgressBar value={1400} max={2400} color={C.purple} label="Peak Load" />
             <div className="text-[10px] mt-1" style={{ color: C.green100g }}>
@@ -97,13 +97,13 @@ export function PowerView() {
             </div>
           </div>
           <div className="space-y-3">
-            <PowerDevice name="Jarvis (JAMES-AI)" idle={150} peak={800} color={C.pink} />
+            <PowerDevice name="Sentinel" idle={150} peak={800} color={C.pink} />
             <PowerDevice name="G9 Monitor #2" idle={80} peak={80} color={C.accent} />
             <PowerDevice name="Switches (×3)" idle={50} peak={150} color={C.textDim} />
             <div className="pt-2" />
             <ProgressBar value={1030} max={1800} color={C.red} label="Estimated Load" />
             <div className="text-[10px] mt-1 p-2 rounded" style={{ color: C.red, background: C.red + '10' }}>
-              ⚠ Jarvis pulls ~800W peak on unprotected strip — consider adding UPS
+              ⚠ Sentinel pulls ~800W peak on unprotected strip — consider adding UPS
             </div>
           </div>
         </div>
@@ -124,9 +124,9 @@ export function PowerView() {
           <tbody>
             {[
               { name: 'Ironman', idle: 350, peak: 1300, prot: 'UPS 1', color: C.warning },
-              { name: 'Jarvis2', idle: 180, peak: 700, prot: 'UPS 2', color: C.purple },
-              { name: 'Jarvis3', idle: 180, peak: 700, prot: 'UPS 2', color: C.purple },
-              { name: 'Jarvis (JAMES-AI)', idle: 150, peak: 800, prot: 'None', color: C.pink },
+              { name: 'Iron-Patriot', idle: 180, peak: 700, prot: 'UPS 2', color: C.purple },
+              { name: 'Jericho', idle: 180, peak: 700, prot: 'UPS 2', color: C.purple },
+              { name: 'Sentinel', idle: 150, peak: 800, prot: 'None', color: C.pink },
               { name: 'Displays (2× G9)', idle: 160, peak: 160, prot: 'Split', color: C.accent },
               { name: 'Switches (3×)', idle: 50, peak: 150, prot: 'None', color: C.textDim },
             ].map(r => (

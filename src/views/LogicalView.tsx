@@ -65,7 +65,7 @@ export function LogicalView() {
           ]} />
         </Section>
 
-        <Section title="JARVIS2 — Worker Node" color={C.purple}>
+        <Section title="IRON-PATRIOT — Worker Node" color={C.purple}>
           <ServiceCard name="Ollama Worker :11434" color={C.purple} details={[
             'Qwen3 32B / CodeLlama 34B',
             '96GB VRAM (RTX PRO 6000)',
@@ -73,7 +73,7 @@ export function LogicalView() {
           ]} />
         </Section>
 
-        <Section title="JARVIS3 — Worker Node" color={C.purple}>
+        <Section title="JERICHO — Worker Node" color={C.purple}>
           <ServiceCard name="Docker Host + Ollama Worker :11434" color={C.purple} details={[
             'Open WebUI / JARVIS-OPS containers',
             'Qwen3 32B / Mistral / embed models',
@@ -86,7 +86,7 @@ export function LogicalView() {
         <Section title="SN2100 Switch" color={C.green100g}>
           <div className="text-[10px]" style={{ color: C.textDim }}>
             <p>16× QSFP28 ports • 3.2 Tb/s switching capacity</p>
-            <p className="mt-1">3 active ports → Ironman, J2, J3</p>
+            <p className="mt-1">3 active ports → Ironman, Iron-Patriot, Jericho</p>
             <p className="mt-1 font-semibold" style={{ color: C.green100g }}>RoCEv2 enabled — zero-copy RDMA for model weights</p>
           </div>
         </Section>
@@ -94,8 +94,8 @@ export function LogicalView() {
         <Section title="Open WebUI Multi-Endpoint Config" color={C.accent}>
           <div className="space-y-1 text-[10px]" style={{ color: C.textDim }}>
             <p><span style={{ color: C.warning }}>●</span> Ironman: http://10.0.100.10:11434 (primary)</p>
-            <p><span style={{ color: C.purple }}>●</span> Jarvis2: http://10.0.100.20:11434 (worker)</p>
-            <p><span style={{ color: C.purple }}>●</span> Jarvis3: http://10.0.100.30:11434 (worker)</p>
+            <p><span style={{ color: C.purple }}>●</span> Iron-Patriot: http://10.0.100.20:11434 (worker)</p>
+            <p><span style={{ color: C.purple }}>●</span> Jericho: http://10.0.100.30:11434 (worker)</p>
             <p className="mt-2 font-semibold" style={{ color: C.accent }}>Load balancing across 384GB VRAM fabric</p>
           </div>
         </Section>
@@ -126,7 +126,7 @@ export function LogicalView() {
         </div>
         <div className="text-[10px] px-2 -mt-1" style={{ color: C.textDim }}>MS510TXUP 10G/2.5G → GS752TPv2 PoE Edge • 192.168.1.0/24</div>
 
-        <Section title="JARVIS (JAMES-AI)" color={C.pink}>
+        <Section title="SENTINEL" color={C.pink}>
           <ServiceCard name="AI Workstation" color={C.pink} details={[
             'RTX 5090 32GB VRAM',
             '192GB DDR5 RAM',
@@ -152,9 +152,9 @@ export function LogicalView() {
           <div className="space-y-2">
             {[
               { name: 'Ironman', vram: 192, color: C.warning, net: '100GbE' },
-              { name: 'Jarvis2', vram: 96, color: C.purple, net: '100GbE' },
-              { name: 'Jarvis3', vram: 96, color: C.purple, net: '100GbE' },
-              { name: 'Jarvis', vram: 32, color: C.pink, net: '2.5GbE' },
+              { name: 'Iron-Patriot', vram: 96, color: C.purple, net: '100GbE' },
+              { name: 'Jericho', vram: 96, color: C.purple, net: '100GbE' },
+              { name: 'Sentinel', vram: 32, color: C.pink, net: '2.5GbE' },
             ].map(m => (
               <div key={m.name} className="flex items-center gap-2">
                 <span className="text-[10px] w-16 font-semibold" style={{ color: m.color }}>{m.name}</span>
