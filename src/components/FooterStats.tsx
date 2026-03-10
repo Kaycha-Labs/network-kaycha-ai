@@ -1,10 +1,10 @@
 export function FooterStats() {
   const stats = [
-    { label: 'Total VRAM', value: '416 GB', color: '#f59e0b' },
+    { label: 'Total VRAM', value: '624 GB', color: '#f59e0b' },
+    { label: 'Machines', value: '10', color: '#dc2626' },
     { label: 'AI Fabric', value: '100 GbE', color: '#34d399' },
-    { label: 'LAN Core', value: '10G/2.5G', color: '#38bdf8' },
-    { label: 'Total RAM', value: '704 GB', color: '#00d4ff' },
-    { label: 'GPU Count', value: '5 GPUs', color: '#f472b6' },
+    { label: 'GPUs', value: '10 GPUs', color: '#f472b6' },
+    { label: 'Total RAM', value: '832+ GB', color: '#00d4ff' },
   ]
 
   return (

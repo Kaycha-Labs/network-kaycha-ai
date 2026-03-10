@@ -8,6 +8,9 @@ const C = {
   cyan10g: '#38bdf8',
   accent: '#00d4ff',
   red: '#ef4444',
+  blue: '#3b82f6',
+  coloGreen: '#10b981',
+  webPurple: '#8b5cf6',
   textDim: '#94a3b8',
   textBright: '#e2e8f0',
   panel: '#111827',
@@ -91,7 +94,7 @@ function ConnectionLine({ x1, y1, x2, y2, color, dashed, thick }: {
 export function PhysicalView() {
   const [selected, setSelected] = useState<string | null>(null)
 
-  const svgW = 1200, svgH = 1040
+  const svgW = 1200, svgH = 1340
 
   return (
     <div className="space-y-4">
@@ -121,46 +124,41 @@ export function PhysicalView() {
           <SpeedBadge x={430} y={95} label="DP 2.1" color={C.accent} />
           <SpeedBadge x={770} y={95} label="DP 2.1" color={C.accent} />
 
-          {/* === IRONMAN (h=170 for 7 spec lines) === */}
-          <DeviceCard x={300} y={110} w={600} h={170} label="IRONMAN" badge="PRIMARY" color={C.warning}
+          {/* === IRONMAN (flagship, ETA Mar 2026) === */}
+          <DeviceCard x={300} y={110} w={600} h={170} label="IRONMAN" badge="ETA MAR '26" color={C.warning}
             selected={selected === 'ironman'} onClick={() => setSelected(selected === 'ironman' ? null : 'ironman')}
             specs={[
               'CPU: AMD Threadripper PRO 9995WX • 128T/64C',
               'RAM: 256GB DDR5 ECC RDIMM (4×64GB)',
-              'GPU: 2× RTX PRO 6000 96GB ECC (192GB VRAM)',
+              'GPU: 2× RTX PRO 6000 Max-Q 96GB (192GB VRAM)',
               'SSD: 2× 4TB Samsung 990 PRO Gen4 NVMe',
               'NIC1: 10GbE → MS510TXUP  •  NIC2: CX-5 VPI 100GbE → SN2100',
-              'Role: Daily driver, Cursor, Claude Desktop, large model inference',
+              'Role: Flagship inference, Cursor, Claude Desktop',
               'Power: ~350W idle / ~1300W peak  •  PSU: 1650W 80+ Titanium',
             ]}
           />
 
-          {/* Dual NIC callout — below card (card bottom = 280) */}
+          {/* Dual NIC callout */}
           <rect x={310} y={288} width={70} height={18} rx={3} fill={C.cyan10g + '20'} stroke={C.cyan10g + '40'} strokeWidth={0.5} />
           <text x={345} y={300} textAnchor="middle" fontSize={8} fill={C.cyan10g} fontFamily="'JetBrains Mono'">NIC1 10G</text>
           <rect x={390} y={288} width={80} height={18} rx={3} fill={C.green100g + '20'} stroke={C.green100g + '40'} strokeWidth={0.5} />
           <text x={430} y={300} textAnchor="middle" fontSize={8} fill={C.green100g} fontFamily="'JetBrains Mono'">NIC2 100G</text>
 
           {/* === CONNECTION LINES: Ironman → Switches === */}
-          {/* Ironman → SN2100 (100GbE) */}
           <ConnectionLine x1={430} y1={310} x2={230} y2={395} color={C.green100g} thick />
           <SpeedBadge x={310} y={355} label="100GbE DAC" color={C.green100g} />
-          {/* Ironman → MS510TXUP (10G) */}
           <ConnectionLine x1={600} y1={310} x2={600} y2={395} color={C.cyan10g} />
           <SpeedBadge x={620} y={355} label="10G RJ45" color={C.cyan10g} />
 
           {/* === SWITCH LAYER === */}
           <text x={svgW / 2} y={388} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={4}>SWITCH LAYER</text>
 
-          {/* SN2100 */}
           <SwitchCard x={60} y={400} w={300} h={80} label="Mellanox SN2100" badge="100GbE AI FABRIC"
             color={C.green100g} ports={16} activeCount={3} totalCount={16} />
 
-          {/* MS510TXUP */}
           <SwitchCard x={440} y={400} w={300} h={80} label="Netgear MS510TXUP" badge="10G LAN CORE"
-            color={C.cyan10g} ports={10} activeCount={6} totalCount={10} />
+            color={C.cyan10g} ports={10} activeCount={8} totalCount={10} />
 
-          {/* GS752TPv2 */}
           <SwitchCard x={830} y={400} w={310} h={80} label="Netgear GS752TPv2" badge="PoE EDGE"
             color={C.textDim} ports={52} activeCount={12} totalCount={16} />
 
@@ -173,107 +171,175 @@ export function PhysicalView() {
             DUAL-HOMED COMPUTE NODES (100GbE + 10G/2.5G LAN)
           </text>
 
-          {/* === CONNECTION LINES: Switches → Nodes === */}
-          {/* J2 → SN2100 */}
+          {/* === CONNECTION LINES: Switches → Row 1 Nodes === */}
           <ConnectionLine x1={210} y1={480} x2={180} y2={555} color={C.green100g} thick />
           <SpeedBadge x={180} y={515} label="100GbE" color={C.green100g} />
-          {/* J2 → MS510TXUP */}
           <ConnectionLine x1={530} y1={480} x2={300} y2={555} color={C.cyan10g} dashed />
           <SpeedBadge x={420} y={510} label="2.5G" color={C.cyan10g} />
-          {/* J3 → SN2100 */}
           <ConnectionLine x1={210} y1={480} x2={560} y2={555} color={C.green100g} thick />
-          {/* J3 → MS510TXUP */}
           <ConnectionLine x1={590} y1={480} x2={680} y2={555} color={C.cyan10g} dashed />
           <SpeedBadge x={640} y={510} label="2.5G" color={C.cyan10g} />
-          {/* Jarvis → MS510TXUP */}
           <ConnectionLine x1={650} y1={480} x2={1020} y2={555} color={C.cyan10g} dashed />
           <SpeedBadge x={850} y={510} label="2.5G" color={C.cyan10g} />
 
-          {/* === COMPUTE NODES === */}
-          <DeviceCard x={60} y={555} w={355} h={135} label="JARVIS2" badge="NODE 2" color={C.purple}
-            selected={selected === 'j2'} onClick={() => setSelected(selected === 'j2' ? null : 'j2')}
+          {/* === ROW 1: IRON-PATRIOT, JERICHO, SENTINEL === */}
+          <DeviceCard x={60} y={555} w={355} h={135} label="IRON-PATRIOT" badge="100G+2.5G" color={C.purple}
+            selected={selected === 'ironpatriot'} onClick={() => setSelected(selected === 'ironpatriot' ? null : 'ironpatriot')}
             specs={[
               'CPU: Intel Ultra 9 285K',
               'RAM: 128GB DDR5',
-              'GPU: RTX PRO 6000 96GB ECC (96GB VRAM)',
+              'GPU: RTX PRO 6000 Ada 96GB (96GB VRAM)',
               'SSD: 4TB Gen5 + 2×4TB',
               'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
-              'Role: Build/test, Ollama worker node',
+              '10.2.10.71 • TS: 100.75.25.51',
             ]}
           />
 
-          <DeviceCard x={445} y={555} w={355} h={135} label="JARVIS3" badge="NODE 3" color={C.purple}
-            selected={selected === 'j3'} onClick={() => setSelected(selected === 'j3' ? null : 'j3')}
+          <DeviceCard x={445} y={555} w={355} h={135} label="JERICHO" badge="100G+2.5G" color={C.purple}
+            selected={selected === 'jericho'} onClick={() => setSelected(selected === 'jericho' ? null : 'jericho')}
             specs={[
               'CPU: Intel Ultra 9 285K',
               'RAM: 128GB DDR5',
-              'GPU: RTX PRO 6000 96GB ECC (96GB VRAM)',
+              'GPU: RTX PRO 6000 Ada 96GB (96GB VRAM)',
               'SSD: 4TB Gen5 + 2×4TB',
               'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
-              'Role: Docker host, automation, Ollama worker',
+              '10.2.10.35 • TS: 100.85.6.71',
             ]}
           />
 
-          <DeviceCard x={830} y={555} w={330} h={135} label="JARVIS (JAMES-AI)" badge="2.5GbE" color={C.pink}
-            selected={selected === 'jarvis'} onClick={() => setSelected(selected === 'jarvis' ? null : 'jarvis')}
+          <DeviceCard x={830} y={555} w={330} h={135} label="SENTINEL" badge="DAILY DRIVER" color={C.pink}
+            selected={selected === 'sentinel'} onClick={() => setSelected(selected === 'sentinel' ? null : 'sentinel')}
             specs={[
               'CPU: AMD Ryzen 9 9950X3D 16C/32T',
               'RAM: 192GB DDR5',
-              'GPU: RTX 5090 32GB + AMD iGPU',
+              'GPU: RTX 5090 32GB',
               'SSD: 4TB + 3TB (6.4TB total)',
               'NIC: Realtek 2.5GbE → MS510TXUP',
-              'Role: AI workstation, gaming, dev',
+              '10.2.10.70 • TS: 100.98.251.57',
             ]}
           />
 
-          {/* === WAN/VPN — routed through gap between J2 and J3 === */}
-          <ConnectionLine x1={430} y1={480} x2={430} y2={550} color={C.red} dashed />
-          <ConnectionLine x1={430} y1={695} x2={430} y2={750} color={C.red} dashed />
-          <rect x={320} y={750} width={220} height={55} rx={6} fill={C.panel} stroke={C.red + '60'} strokeWidth={1} />
-          <text x={350} y={770} fontSize={10} fontWeight={600} fill={C.red} fontFamily="'JetBrains Mono'">WAN / VPN</text>
-          <text x={350} y={784} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">Internet Gateway</text>
-          <text x={350} y={796} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">Tailscale Mesh • Parsec</text>
+          {/* === ADDITIONAL NODES LABEL === */}
+          <text x={svgW / 2} y={720} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={2}>
+            ADDITIONAL NODES (LAN CONNECTED)
+          </text>
+
+          {/* === ROW 2: WAR-MACHINE, HAPPY === */}
+          <DeviceCard x={160} y={735} w={380} h={100} label="WAR-MACHINE" badge="BUILDING" color={C.blue}
+            selected={selected === 'warmachine'} onClick={() => setSelected(selected === 'warmachine' ? null : 'warmachine')}
+            specs={[
+              'CPU: AMD Ryzen 9 9950X  •  Owner: Jeremy',
+              'RAM: 128GB DDR5 (arrives Mar 11)',
+              'GPU: RTX 5080 16GB  •  NIC: 2.5GbE → MS510',
+              'Role: Dev workstation, secondary inference',
+            ]}
+          />
+
+          <DeviceCard x={660} y={735} w={380} h={100} label="HAPPY" badge="TEST RUNNER" color={C.textDim}
+            selected={selected === 'happy'} onClick={() => setSelected(selected === 'happy' ? null : 'happy')}
+            specs={[
+              'Home Desktop',
+              'NIC: 2.5GbE → MS510  •  Role: NSSM test services',
+              '10.2.10.112 • TS: 100.87.48.124',
+            ]}
+          />
+
+          {/* === WAN / VPN === */}
+          <ConnectionLine x1={600} y1={840} x2={600} y2={870} color={C.red} dashed />
+          <rect x={430} y={870} width={340} height={55} rx={6} fill={C.panel} stroke={C.red + '60'} strokeWidth={1} />
+          <text x={460} y={893} fontSize={10} fontWeight={600} fill={C.red} fontFamily="'JetBrains Mono'">WAN / VPN</text>
+          <text x={460} y={907} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">Internet Gateway • Tailscale Mesh • Parsec</text>
+
+          {/* VPN connection down to colo */}
+          <ConnectionLine x1={600} y1={925} x2={600} y2={960} color={C.red} dashed />
+
+          {/* === COLO SERVERS LABEL === */}
+          <text x={svgW / 2} y={975} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={2}>
+            COLO SERVERS (VPN CONNECTED)
+          </text>
+
+          {/* === COLO ROW: JARVIS, STARK-TOWER, STARK-INDUSTRIES, MALIBU === */}
+          <DeviceCard x={60} y={990} w={265} h={120} label="JARVIS" badge="AI SERVER" color={C.coloGreen}
+            selected={selected === 'jarvis'} onClick={() => setSelected(selected === 'jarvis' ? null : 'jarvis')}
+            specs={[
+              'Boca Raton (Colo)',
+              'GPU: 4× NVIDIA L40S 48GB',
+              '192GB Total VRAM',
+              'SSH: .25 / .26 • Ollama :11434',
+              'iDRAC: .23',
+            ]}
+          />
+
+          <DeviceCard x={345} y={990} w={265} h={120} label="STARK-TOWER" badge="PROD #1" color={C.webPurple}
+            selected={selected === 'starktower'} onClick={() => setSelected(selected === 'starktower' ? null : 'starktower')}
+            specs={[
+              'Atlanta (Cloud)',
+              'Main Production Server',
+              'Web / Database Stack',
+              'Active',
+            ]}
+          />
+
+          <DeviceCard x={630} y={990} w={265} h={120} label="STARK-INDUSTRIES" badge="PROD #2" color={C.webPurple}
+            selected={selected === 'starkindustries'} onClick={() => setSelected(selected === 'starkindustries' ? null : 'starkindustries')}
+            specs={[
+              'Boca Raton (Colo)',
+              'Secondary Production',
+              'Web / Database Stack',
+              'Active',
+            ]}
+          />
+
+          <DeviceCard x={915} y={990} w={245} h={120} label="MALIBU" badge="STAGING" color={C.webPurple}
+            selected={selected === 'malibu'} onClick={() => setSelected(selected === 'malibu' ? null : 'malibu')}
+            specs={[
+              'Boca Raton (Colo)',
+              'Test Environment',
+              'Web / Database Stack',
+              'Active',
+            ]}
+          />
 
           {/* === SPEED COMPARISON === */}
-          <rect x={60} y={830} width={500} height={110} rx={8} fill={C.panel} stroke={C.border} strokeWidth={1} />
-          <text x={80} y={855} fontSize={11} fontWeight={700} fill={C.textBright} fontFamily="'JetBrains Mono'">SPEED COMPARISON</text>
-          {/* Tier 1 */}
-          <rect x={80} y={865} width={100} height={12} rx={2} fill={C.textDim + '30'} />
-          <rect x={80} y={865} width={10} height={12} rx={2} fill={C.textDim} />
-          <text x={195} y={875} fontSize={9} fill={C.textDim} fontFamily="'JetBrains Mono'">Old LAN 1GbE ~125 MB/s</text>
-          {/* Tier 2 */}
-          <rect x={80} y={888} width={100} height={12} rx={2} fill={C.cyan10g + '20'} />
-          <rect x={80} y={888} width={100} height={12} rx={2} fill={C.cyan10g + '60'} />
-          <text x={195} y={898} fontSize={9} fill={C.cyan10g} fontFamily="'JetBrains Mono'">New LAN 10G/2.5G ~1.25 GB/s (10×)</text>
-          {/* Tier 3 */}
-          <rect x={80} y={911} width={450} height={12} rx={2} fill={C.green100g + '20'} />
-          <rect x={80} y={911} width={450} height={12} rx={2} fill={C.green100g + '40'} />
-          <text x={195} y={921} fontSize={9} fill={C.green100g} fontFamily="'JetBrains Mono'">AI Fabric 100GbE ~12.5 GB/s (100×)</text>
+          <rect x={60} y={1140} width={500} height={110} rx={8} fill={C.panel} stroke={C.border} strokeWidth={1} />
+          <text x={80} y={1165} fontSize={11} fontWeight={700} fill={C.textBright} fontFamily="'JetBrains Mono'">SPEED COMPARISON</text>
+          <rect x={80} y={1175} width={100} height={12} rx={2} fill={C.textDim + '30'} />
+          <rect x={80} y={1175} width={10} height={12} rx={2} fill={C.textDim} />
+          <text x={195} y={1185} fontSize={9} fill={C.textDim} fontFamily="'JetBrains Mono'">Old LAN 1GbE ~125 MB/s</text>
+          <rect x={80} y={1198} width={100} height={12} rx={2} fill={C.cyan10g + '20'} />
+          <rect x={80} y={1198} width={100} height={12} rx={2} fill={C.cyan10g + '60'} />
+          <text x={195} y={1208} fontSize={9} fill={C.cyan10g} fontFamily="'JetBrains Mono'">New LAN 10G/2.5G ~1.25 GB/s (10×)</text>
+          <rect x={80} y={1221} width={450} height={12} rx={2} fill={C.green100g + '20'} />
+          <rect x={80} y={1221} width={450} height={12} rx={2} fill={C.green100g + '40'} />
+          <text x={195} y={1231} fontSize={9} fill={C.green100g} fontFamily="'JetBrains Mono'">AI Fabric 100GbE ~12.5 GB/s (100×)</text>
 
           {/* === REMOTE ACCESS === */}
-          <rect x={600} y={830} width={540} height={110} rx={8} fill={C.panel} stroke={C.border} strokeWidth={1} />
-          <text x={620} y={855} fontSize={11} fontWeight={700} fill={C.textBright} fontFamily="'JetBrains Mono'">REMOTE ACCESS</text>
-          <text x={620} y={877} fontSize={9} fill={C.accent} fontFamily="'JetBrains Mono'">● Parsec — GPU-accelerated remote desktop (Ironman host)</text>
-          <text x={620} y={896} fontSize={9} fill={C.purple} fontFamily="'JetBrains Mono'">● Barrier KVM — shared keyboard/mouse across all nodes</text>
-          <text x={620} y={915} fontSize={9} fill={C.warning} fontFamily="'JetBrains Mono'">● WinRM Mesh — remote PowerShell admin (all nodes)</text>
-          <text x={620} y={934} fontSize={9} fill={C.red} fontFamily="'JetBrains Mono'">● Tailscale — encrypted overlay VPN (100.x.x.x)</text>
+          <rect x={600} y={1140} width={540} height={110} rx={8} fill={C.panel} stroke={C.border} strokeWidth={1} />
+          <text x={620} y={1165} fontSize={11} fontWeight={700} fill={C.textBright} fontFamily="'JetBrains Mono'">REMOTE ACCESS</text>
+          <text x={620} y={1187} fontSize={9} fill={C.accent} fontFamily="'JetBrains Mono'">● Parsec — GPU-accelerated remote desktop</text>
+          <text x={620} y={1206} fontSize={9} fill={C.purple} fontFamily="'JetBrains Mono'">● Barrier KVM — shared keyboard/mouse across nodes</text>
+          <text x={620} y={1225} fontSize={9} fill={C.warning} fontFamily="'JetBrains Mono'">● WinRM Mesh — remote PowerShell admin (all nodes)</text>
+          <text x={620} y={1244} fontSize={9} fill={C.red} fontFamily="'JetBrains Mono'">● Tailscale — encrypted overlay VPN (100.x.x.x)</text>
 
           {/* === LEGEND === */}
-          <rect x={60} y={960} width={1080} height={55} rx={8} fill={C.panel} stroke={C.border} strokeWidth={1} />
-          <text x={80} y={980} fontSize={10} fontWeight={600} fill={C.textDim} fontFamily="'JetBrains Mono'">LEGEND</text>
+          <rect x={60} y={1270} width={1080} height={55} rx={8} fill={C.panel} stroke={C.border} strokeWidth={1} />
+          <text x={80} y={1290} fontSize={10} fontWeight={600} fill={C.textDim} fontFamily="'JetBrains Mono'">LEGEND</text>
           {[
-            { color: C.warning, label: 'Primary Workstation', x: 160 },
-            { color: C.purple, label: 'AI Compute Nodes', x: 340 },
-            { color: C.pink, label: 'AI Workstation (2.5GbE)', x: 505 },
-            { color: C.green100g, label: '100GbE AI Fabric', x: 710 },
-            { color: C.cyan10g, label: '10G/2.5G LAN', x: 880 },
-            { color: C.accent, label: 'Display / DP 2.1', x: 160, y: 1000 },
-            { color: C.red, label: 'WAN / VPN', x: 340, y: 1000 },
-            { color: C.textDim, label: 'PoE Edge', x: 505, y: 1000 },
+            { color: C.warning, label: 'Flagship', x: 160 },
+            { color: C.purple, label: 'Dual-Homed Compute', x: 280 },
+            { color: C.pink, label: 'Daily Driver', x: 470 },
+            { color: C.blue, label: 'Build / Test', x: 600 },
+            { color: C.coloGreen, label: 'Colo AI Server', x: 730 },
+            { color: C.webPurple, label: 'Colo Web / Prod', x: 890 },
+            { color: C.green100g, label: '100GbE AI Fabric', x: 160, y: 1310 },
+            { color: C.cyan10g, label: '10G/2.5G LAN', x: 340, y: 1310 },
+            { color: C.accent, label: 'Display / DP 2.1', x: 510, y: 1310 },
+            { color: C.red, label: 'WAN / VPN', x: 680, y: 1310 },
+            { color: C.textDim, label: 'PoE Edge', x: 820, y: 1310 },
           ].map((item) => (
             <g key={item.label}>
-              <rect x={item.x} y={(item.y || 972) - 3} width={10} height={10} rx={2} fill={item.color} />
-              <text x={item.x + 15} y={(item.y || 980)} fontSize={9} fill={C.textDim} fontFamily="'JetBrains Mono'">{item.label}</text>
+              <rect x={item.x} y={(item.y || 1282) - 3} width={10} height={10} rx={2} fill={item.color} />
+              <text x={item.x + 15} y={(item.y || 1290)} fontSize={9} fill={C.textDim} fontFamily="'JetBrains Mono'">{item.label}</text>
             </g>
           ))}
         </svg>
