@@ -273,16 +273,16 @@ export function PhysicalView() {
           ])}
 
           {/* === ER4 VPN Gateway === */}
-          <ConnectionLine x1={560} y1={480} x2={750} y2={735} color={C.red} dashed />
-          <SpeedBadge x={660} y={710} label="ER4 VPN" color={C.red} />
+          <ConnectionLine x1={560} y1={480} x2={830} y2={735} color={C.red} dashed />
+          <SpeedBadge x={710} y={710} label="ER4 VPN" color={C.red} />
 
-          <rect x={660} y={735} width={200} height={50} rx={6} fill={C.panel} stroke={C.red + '60'} strokeWidth={1} />
-          <text x={680} y={757} fontSize={9} fontWeight={600} fill={C.red} fontFamily="'JetBrains Mono'">ER4 Gateway</text>
-          <text x={680} y={772} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">MS510 Port 2 • VPN → Remote</text>
+          <rect x={730} y={735} width={200} height={50} rx={6} fill={C.panel} stroke={C.red + '60'} strokeWidth={1} />
+          <text x={750} y={757} fontSize={9} fontWeight={600} fill={C.red} fontFamily="'JetBrains Mono'">ER4 Gateway</text>
+          <text x={750} y={772} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">MS510 Port 2 • VPN → Remote</text>
 
-          <ConnectionLine x1={760} y1={785} x2={760} y2={810} color={C.red} dashed />
+          <ConnectionLine x1={830} y1={785} x2={830} y2={810} color={C.red} dashed />
 
-          {card('warmachine', 560, 810, 400, 100, [
+          {card('warmachine', 630, 810, 400, 100, [
             "CPU: AMD Ryzen 9 9950X  •  Jeremy's Machine",
             'RAM: 128GB DDR5 (arrives Mar 11)',
             'GPU: RTX 5080 16GB  •  Remote via Edge4 VPN',
@@ -290,7 +290,7 @@ export function PhysicalView() {
           ])}
 
           {/* === WAN / VPN === */}
-          <ConnectionLine x1={600} y1={910} x2={600} y2={940} color={C.red} dashed />
+          <ConnectionLine x1={730} y1={910} x2={600} y2={940} color={C.red} dashed />
           <rect x={430} y={940} width={340} height={55} rx={6} fill={C.panel} stroke={C.red + '60'} strokeWidth={1} />
           <text x={460} y={963} fontSize={10} fontWeight={600} fill={C.red} fontFamily="'JetBrains Mono'">WAN / VPN</text>
           <text x={460} y={977} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">Internet Gateway • Tailscale Mesh • Parsec</text>
