@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { NODES } from '../data/nodes'
+import { NodeModal } from '../components/NodeModal'
 
 const C = {
   warning: '#f59e0b',
@@ -18,8 +20,23 @@ const C = {
   bg: '#0a0e17',
 }
 
+const COLOR_MAP: Record<string, string> = {
+  warning: C.warning,
+  purple: C.purple,
+  pink: C.pink,
+  green100g: C.green100g,
+  cyan10g: C.cyan10g,
+  accent: C.accent,
+  red: C.red,
+  blue: C.blue,
+  coloGreen: C.coloGreen,
+  webPurple: C.webPurple,
+  textDim: C.textDim,
+}
+
 interface DeviceCardProps {
   x: number; y: number; w: number; h: number
+  nodeId: string
   label: string; badge?: string; color: string
   specs: string[]; selected: boolean; onClick: () => void
 }
@@ -27,11 +44,27 @@ interface DeviceCardProps {
 function DeviceCard({ x, y, w, h, label, badge, color, specs, selected, onClick }: DeviceCardProps) {
   return (
     <g onClick={onClick} style={{ cursor: 'pointer' }}>
+      {/* hover glow ring */}
+      {selected && (
+        <rect x={x - 3} y={y - 3} width={w + 6} height={h + 6} rx={10}
+          fill="none" stroke={color} strokeWidth={1.5} opacity={0.3}
+        />
+      )}
       <rect x={x} y={y} width={w} height={h} rx={8}
-        fill={C.panel} stroke={selected ? color : C.border}
+        fill={selected ? color + '12' : C.panel}
+        stroke={selected ? color : C.border}
         strokeWidth={selected ? 2 : 1}
-        filter={selected ? `drop-shadow(0 0 12px ${color}40)` : undefined}
+        filter={selected ? `drop-shadow(0 0 14px ${color}50)` : undefined}
       />
+      {/* Clickable hint chip */}
+      {!selected && (
+        <g>
+          <rect x={x + w - 50} y={y + h - 20} width={42} height={14} rx={3}
+            fill={color + '15'} stroke={color + '30'} strokeWidth={0.5}
+          />
+          <text x={x + w - 29} y={y + h - 9} textAnchor="middle" fontSize={7} fill={color + 'aa'} fontFamily="'JetBrains Mono'">details ›</text>
+        </g>
+      )}
       {badge && (
         <g>
           <rect x={x + w - 8 - badge.length * 6.5} y={y + 6} width={badge.length * 6.5 + 12} height={18} rx={4} fill={color + '25'} stroke={color + '50'} strokeWidth={0.5} />
@@ -92,9 +125,31 @@ function ConnectionLine({ x1, y1, x2, y2, color, dashed, thick }: {
 }
 
 export function PhysicalView() {
-  const [selected, setSelected] = useState<string | null>(null)
+  const [activeModal, setActiveModal] = useState<string | null>(null)
+
+  const openModal = (id: string) => setActiveModal(id)
+  const closeModal = () => setActiveModal(null)
 
   const svgW = 1200, svgH = 1340
+
+  const card = (nodeId: string, x: number, y: number, w: number, h: number, specs: string[]) => {
+    const node = NODES[nodeId]
+    if (!node) return null
+    const color = COLOR_MAP[node.colorKey] || C.accent
+    return (
+      <DeviceCard
+        key={nodeId}
+        x={x} y={y} w={w} h={h}
+        nodeId={nodeId}
+        label={node.name}
+        badge={node.badge}
+        color={color}
+        specs={specs}
+        selected={activeModal === nodeId}
+        onClick={() => openModal(nodeId)}
+      />
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -109,69 +164,57 @@ export function PhysicalView() {
 
           {/* === DISPLAY LAYER === */}
           <text x={svgW / 2} y={20} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={4}>DISPLAY LAYER</text>
-          {/* G9 Monitor 1 */}
           <rect x={200} y={30} width={340} height={50} rx={6} fill={C.panel} stroke={C.accent + '60'} strokeWidth={1} />
           <text x={220} y={52} fontSize={9} fontWeight={600} fill={C.accent} fontFamily="'JetBrains Mono'">Samsung 49" Odyssey OLED G9</text>
           <text x={220} y={68} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">5120×1440 240Hz • DP 2.1</text>
-          {/* G9 Monitor 2 */}
           <rect x={660} y={30} width={340} height={50} rx={6} fill={C.panel} stroke={C.accent + '60'} strokeWidth={1} />
           <text x={680} y={52} fontSize={9} fontWeight={600} fill={C.accent} fontFamily="'JetBrains Mono'">Samsung 49" Odyssey OLED G9</text>
           <text x={680} y={68} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">5120×1440 240Hz • DP 2.1</text>
 
-          {/* DP 2.1 lines from monitors to Ironman */}
           <ConnectionLine x1={370} y1={80} x2={500} y2={110} color={C.accent} />
           <ConnectionLine x1={830} y1={80} x2={700} y2={110} color={C.accent} />
           <SpeedBadge x={430} y={95} label="DP 2.1" color={C.accent} />
           <SpeedBadge x={770} y={95} label="DP 2.1" color={C.accent} />
 
-          {/* === IRONMAN (flagship, ETA Mar 2026) === */}
-          <DeviceCard x={300} y={110} w={600} h={170} label="IRONMAN" badge="ETA MAR '26" color={C.warning}
-            selected={selected === 'ironman'} onClick={() => setSelected(selected === 'ironman' ? null : 'ironman')}
-            specs={[
-              'CPU: AMD Threadripper PRO 9995WX • 128T/64C',
-              'RAM: 256GB DDR5 ECC RDIMM (4×64GB)',
-              'GPU: 2× RTX PRO 6000 Max-Q 96GB (192GB VRAM)',
-              'SSD: 2× 4TB Samsung 990 PRO Gen4 NVMe',
-              'NIC1: 10GbE → MS510TXUP  •  NIC2: CX-5 VPI 100GbE → SN2100',
-              'Role: Flagship inference, Cursor, Claude Desktop',
-              'Power: ~350W idle / ~1300W peak  •  PSU: 1650W 80+ Titanium',
-            ]}
-          />
+          {/* === IRONMAN === */}
+          {card('ironman', 300, 110, 600, 170, [
+            'CPU: AMD Threadripper PRO 9995WX • 64C/128T',
+            'RAM: 256GB DDR5 ECC RDIMM (4×64GB)',
+            'GPU: 2× RTX PRO 6000 Blackwell 96GB (192GB NVLink VRAM)',
+            'SSD: 2× 4TB Samsung 990 PRO Gen4 NVMe',
+            'NIC1: 10GbE → MS510TXUP  •  NIC2: CX-5 VPI 100GbE → SN2100',
+            'Role: Flagship inference, Cursor, Claude Desktop',
+            'Power: ~350W idle / ~1300W peak  •  PSU: 1650W 80+ Titanium',
+          ])}
 
-          {/* Dual NIC callout */}
           <rect x={310} y={288} width={70} height={18} rx={3} fill={C.cyan10g + '20'} stroke={C.cyan10g + '40'} strokeWidth={0.5} />
           <text x={345} y={300} textAnchor="middle" fontSize={8} fill={C.cyan10g} fontFamily="'JetBrains Mono'">NIC1 10G</text>
           <rect x={390} y={288} width={80} height={18} rx={3} fill={C.green100g + '20'} stroke={C.green100g + '40'} strokeWidth={0.5} />
           <text x={430} y={300} textAnchor="middle" fontSize={8} fill={C.green100g} fontFamily="'JetBrains Mono'">NIC2 100G</text>
 
-          {/* === CONNECTION LINES: Ironman → Switches === */}
+          {/* === SWITCH LAYER === */}
           <ConnectionLine x1={430} y1={310} x2={230} y2={395} color={C.green100g} thick />
           <SpeedBadge x={310} y={355} label="100GbE DAC" color={C.green100g} />
           <ConnectionLine x1={600} y1={310} x2={600} y2={395} color={C.cyan10g} />
           <SpeedBadge x={620} y={355} label="10G RJ45" color={C.cyan10g} />
 
-          {/* === SWITCH LAYER === */}
           <text x={svgW / 2} y={388} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={4}>SWITCH LAYER</text>
 
           <SwitchCard x={60} y={400} w={300} h={80} label="Mellanox SN2100" badge="100GbE AI FABRIC"
             color={C.green100g} ports={16} activeCount={3} totalCount={16} />
-
           <SwitchCard x={440} y={400} w={300} h={80} label="Netgear MS510TXUP" badge="10G LAN CORE"
             color={C.cyan10g} ports={10} activeCount={8} totalCount={10} />
-
           <SwitchCard x={830} y={400} w={310} h={80} label="Netgear GS752TPv2" badge="PoE EDGE"
             color={C.textDim} ports={52} activeCount={12} totalCount={16} />
 
-          {/* Cascade: MS510TXUP → GS752TPv2 */}
           <ConnectionLine x1={740} y1={440} x2={830} y2={440} color={C.warning} />
           <SpeedBadge x={785} y={432} label="1G SFP" color={C.warning} />
 
-          {/* === COMPUTE NODES LABEL === */}
+          {/* === COMPUTE NODES === */}
           <text x={svgW / 2} y={540} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={2}>
             DUAL-HOMED COMPUTE NODES (100GbE + 10G/2.5G LAN)
           </text>
 
-          {/* === CONNECTION LINES: Switches → Row 1 Nodes === */}
           <ConnectionLine x1={210} y1={480} x2={180} y2={555} color={C.green100g} thick />
           <SpeedBadge x={180} y={515} label="100GbE" color={C.green100g} />
           <ConnectionLine x1={530} y1={480} x2={300} y2={555} color={C.cyan10g} dashed />
@@ -182,67 +225,51 @@ export function PhysicalView() {
           <ConnectionLine x1={650} y1={480} x2={1020} y2={555} color={C.cyan10g} dashed />
           <SpeedBadge x={850} y={510} label="2.5G" color={C.cyan10g} />
 
-          {/* === ROW 1: IRON-PATRIOT, JERICHO, SENTINEL === */}
-          <DeviceCard x={60} y={555} w={355} h={135} label="IRON-PATRIOT" badge="100G+2.5G" color={C.purple}
-            selected={selected === 'ironpatriot'} onClick={() => setSelected(selected === 'ironpatriot' ? null : 'ironpatriot')}
-            specs={[
-              'CPU: Intel Ultra 9 285K',
-              'RAM: 128GB DDR5',
-              'GPU: RTX PRO 6000 Ada 96GB (96GB VRAM)',
-              'SSD: 4TB Gen5 + 2×4TB',
-              'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
-              '10.2.10.71 • TS: 100.75.25.51',
-            ]}
-          />
+          {/* === ROW 1 === */}
+          {card('ironpatriot', 60, 555, 355, 135, [
+            'CPU: Intel Ultra 9 285K',
+            'RAM: 128GB DDR5',
+            'GPU: RTX PRO 6000 Ada 96GB',
+            'SSD: 4TB Gen5 + 2×4TB',
+            'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
+            '10.2.10.71 • TS: 100.75.25.51',
+          ])}
 
-          <DeviceCard x={445} y={555} w={355} h={135} label="JERICHO" badge="100G+2.5G" color={C.purple}
-            selected={selected === 'jericho'} onClick={() => setSelected(selected === 'jericho' ? null : 'jericho')}
-            specs={[
-              'CPU: Intel Ultra 9 285K',
-              'RAM: 128GB DDR5',
-              'GPU: RTX PRO 6000 Ada 96GB (96GB VRAM)',
-              'SSD: 4TB Gen5 + 2×4TB',
-              'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
-              '10.2.10.35 • TS: 100.85.6.71',
-            ]}
-          />
+          {card('jericho', 445, 555, 355, 135, [
+            'CPU: Intel Ultra 9 285K',
+            'RAM: 128GB DDR5',
+            'GPU: RTX PRO 6000 Ada 96GB',
+            'SSD: 4TB Gen5 + 2×4TB',
+            'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
+            '10.2.10.35 • TS: 100.85.6.71',
+          ])}
 
-          <DeviceCard x={830} y={555} w={330} h={135} label="SENTINEL" badge="DAILY DRIVER" color={C.pink}
-            selected={selected === 'sentinel'} onClick={() => setSelected(selected === 'sentinel' ? null : 'sentinel')}
-            specs={[
-              'CPU: AMD Ryzen 9 9950X3D 16C/32T',
-              'RAM: 192GB DDR5',
-              'GPU: RTX 5090 32GB',
-              'SSD: 4TB + 3TB (6.4TB total)',
-              'NIC: Realtek 2.5GbE → MS510TXUP',
-              '10.2.10.70 • TS: 100.98.251.57',
-            ]}
-          />
+          {card('sentinel', 830, 555, 330, 135, [
+            'CPU: AMD Ryzen 9 9950X3D 16C/32T',
+            'RAM: 192GB DDR5',
+            'GPU: RTX 5090 32GB',
+            'SSD: 4TB + 3TB (6.4TB total)',
+            'NIC: Realtek 2.5GbE → MS510TXUP',
+            '10.2.10.70 • TS: 100.98.251.57',
+          ])}
 
-          {/* === ADDITIONAL NODES LABEL === */}
+          {/* === ROW 2 === */}
           <text x={svgW / 2} y={720} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={2}>
             ADDITIONAL NODES (LAN CONNECTED)
           </text>
 
-          {/* === ROW 2: WAR-MACHINE, HAPPY === */}
-          <DeviceCard x={160} y={735} w={380} h={100} label="WAR-MACHINE" badge="BUILDING" color={C.blue}
-            selected={selected === 'warmachine'} onClick={() => setSelected(selected === 'warmachine' ? null : 'warmachine')}
-            specs={[
-              'CPU: AMD Ryzen 9 9950X  •  Owner: Jeremy',
-              'RAM: 128GB DDR5 (arrives Mar 11)',
-              'GPU: RTX 5080 16GB  •  NIC: 2.5GbE → MS510',
-              'Role: Dev workstation, secondary inference',
-            ]}
-          />
+          {card('warmachine', 160, 735, 380, 100, [
+            'CPU: AMD Ryzen 9 9950X  •  Owner: Jeremy',
+            'RAM: 128GB DDR5 (arrives Mar 11)',
+            'GPU: RTX 5080 16GB  •  NIC: 2.5GbE → MS510',
+            'Role: Dev workstation, secondary inference',
+          ])}
 
-          <DeviceCard x={660} y={735} w={380} h={100} label="HAPPY" badge="TEST RUNNER" color={C.textDim}
-            selected={selected === 'happy'} onClick={() => setSelected(selected === 'happy' ? null : 'happy')}
-            specs={[
-              'Home Desktop',
-              'NIC: 2.5GbE → MS510  •  Role: NSSM test services',
-              '10.2.10.112 • TS: 100.87.48.124',
-            ]}
-          />
+          {card('happy', 660, 735, 380, 100, [
+            'Home Desktop',
+            'NIC: 2.5GbE → MS510  •  Role: NSSM test services',
+            '10.2.10.112 • TS: 100.87.48.124',
+          ])}
 
           {/* === WAN / VPN === */}
           <ConnectionLine x1={600} y1={840} x2={600} y2={870} color={C.red} dashed />
@@ -250,55 +277,41 @@ export function PhysicalView() {
           <text x={460} y={893} fontSize={10} fontWeight={600} fill={C.red} fontFamily="'JetBrains Mono'">WAN / VPN</text>
           <text x={460} y={907} fontSize={8} fill={C.textDim} fontFamily="'JetBrains Mono'">Internet Gateway • Tailscale Mesh • Parsec</text>
 
-          {/* VPN connection down to colo */}
           <ConnectionLine x1={600} y1={925} x2={600} y2={960} color={C.red} dashed />
 
-          {/* === COLO SERVERS LABEL === */}
+          {/* === COLO SERVERS === */}
           <text x={svgW / 2} y={975} textAnchor="middle" fontSize={10} fill={C.textDim} fontFamily="'JetBrains Mono'" letterSpacing={2}>
             COLO SERVERS (VPN CONNECTED)
           </text>
 
-          {/* === COLO ROW: JARVIS, STARK-TOWER, STARK-INDUSTRIES, MALIBU === */}
-          <DeviceCard x={60} y={990} w={265} h={120} label="JARVIS" badge="AI SERVER" color={C.coloGreen}
-            selected={selected === 'jarvis'} onClick={() => setSelected(selected === 'jarvis' ? null : 'jarvis')}
-            specs={[
-              'Boca Raton (Colo)',
-              'GPU: 4× NVIDIA L40S 48GB',
-              '192GB Total VRAM',
-              'SSH: .25 / .26 • Ollama :11434',
-              'iDRAC: .23',
-            ]}
-          />
+          {card('jarvis', 60, 990, 265, 120, [
+            'Boca Raton (Colo)',
+            'GPU: 4× NVIDIA L40S 48GB',
+            '192GB Total VRAM',
+            'SSH: .25 / .26 • Ollama :11434',
+            'iDRAC: .23',
+          ])}
 
-          <DeviceCard x={345} y={990} w={265} h={120} label="STARK-TOWER" badge="PROD #1" color={C.webPurple}
-            selected={selected === 'starktower'} onClick={() => setSelected(selected === 'starktower' ? null : 'starktower')}
-            specs={[
-              'Atlanta (Cloud)',
-              'Main Production Server',
-              'Web / Database Stack',
-              'Active',
-            ]}
-          />
+          {card('starktower', 345, 990, 265, 120, [
+            'Atlanta (Cloud)',
+            'Main Production Server',
+            'Web / Database Stack',
+            'Active',
+          ])}
 
-          <DeviceCard x={630} y={990} w={265} h={120} label="STARK-INDUSTRIES" badge="PROD #2" color={C.webPurple}
-            selected={selected === 'starkindustries'} onClick={() => setSelected(selected === 'starkindustries' ? null : 'starkindustries')}
-            specs={[
-              'Boca Raton (Colo)',
-              'Secondary Production',
-              'Web / Database Stack',
-              'Active',
-            ]}
-          />
+          {card('starkindustries', 630, 990, 265, 120, [
+            'Boca Raton (Colo)',
+            'Secondary Production',
+            'Web / Database Stack',
+            'Active',
+          ])}
 
-          <DeviceCard x={915} y={990} w={245} h={120} label="MALIBU" badge="STAGING" color={C.webPurple}
-            selected={selected === 'malibu'} onClick={() => setSelected(selected === 'malibu' ? null : 'malibu')}
-            specs={[
-              'Boca Raton (Colo)',
-              'Test Environment',
-              'Web / Database Stack',
-              'Active',
-            ]}
-          />
+          {card('malibu', 915, 990, 245, 120, [
+            'Boca Raton (Colo)',
+            'Test Environment',
+            'Web / Database Stack',
+            'Active',
+          ])}
 
           {/* === SPEED COMPARISON === */}
           <rect x={60} y={1140} width={500} height={110} rx={8} fill={C.panel} stroke={C.border} strokeWidth={1} />
@@ -306,10 +319,8 @@ export function PhysicalView() {
           <rect x={80} y={1175} width={100} height={12} rx={2} fill={C.textDim + '30'} />
           <rect x={80} y={1175} width={10} height={12} rx={2} fill={C.textDim} />
           <text x={195} y={1185} fontSize={9} fill={C.textDim} fontFamily="'JetBrains Mono'">Old LAN 1GbE ~125 MB/s</text>
-          <rect x={80} y={1198} width={100} height={12} rx={2} fill={C.cyan10g + '20'} />
           <rect x={80} y={1198} width={100} height={12} rx={2} fill={C.cyan10g + '60'} />
           <text x={195} y={1208} fontSize={9} fill={C.cyan10g} fontFamily="'JetBrains Mono'">New LAN 10G/2.5G ~1.25 GB/s (10×)</text>
-          <rect x={80} y={1221} width={450} height={12} rx={2} fill={C.green100g + '20'} />
           <rect x={80} y={1221} width={450} height={12} rx={2} fill={C.green100g + '40'} />
           <text x={195} y={1231} fontSize={9} fill={C.green100g} fontFamily="'JetBrains Mono'">AI Fabric 100GbE ~12.5 GB/s (100×)</text>
 
@@ -344,6 +355,11 @@ export function PhysicalView() {
           ))}
         </svg>
       </div>
+
+      {/* Modal */}
+      {activeModal && NODES[activeModal] && (
+        <NodeModal node={NODES[activeModal]} onClose={closeModal} />
+      )}
     </div>
   )
 }
