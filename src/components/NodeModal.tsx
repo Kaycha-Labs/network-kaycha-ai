@@ -1,4 +1,4 @@
-import { NodeData } from '../data/nodes'
+import type { NodeData } from '../data/nodes'
 import { C, COLOR_MAP } from '../constants/colors'
 
 const APP_CATEGORY_ICONS: Record<string, string> = {
