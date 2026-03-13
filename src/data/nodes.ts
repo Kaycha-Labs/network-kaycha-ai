@@ -50,8 +50,8 @@ export const NODES: Record<string, NodeData> = {
   ironman: {
     id: 'ironman',
     name: 'IRONMAN',
-    badge: "ETA MAR '26",
-    status: 'coming-soon',
+    badge: 'FLAGSHIP',
+    status: 'online',
     role: 'Flagship Inference + Primary Dev',
     colorKey: 'warning',
     siteId: 'boca-lab',
@@ -76,7 +76,7 @@ export const NODES: Record<string, NodeData> = {
     interfaces: [
       { label: 'NIC1 (10G RJ45)', speed: '10GbE', target: 'Netgear MS510TXUP', ip: '10.2.10.TBD', color: 'lan' },
       { label: 'NIC2 (ConnectX-5 VPI)', speed: '100GbE', target: 'Mellanox SN2100 AI Fabric', ip: '10.0.100.10', color: 'fabric' },
-      { label: 'Tailscale', speed: 'WireGuard', target: 'Mesh VPN overlay', ip: 'TBD', color: 'tailscale' },
+      { label: 'Tailscale', speed: 'WireGuard', target: 'Mesh VPN overlay', ip: '100.97.196.3', color: 'tailscale' },
       { label: 'DP 2.1 (×2)', speed: 'DisplayPort 2.1', target: '2× Samsung G9 OLED', color: 'display' },
     ],
     services: [
@@ -147,7 +147,7 @@ export const NODES: Record<string, NodeData> = {
     hardware: [
       'CPU: Intel Ultra 9 285K',
       'RAM: 128GB DDR5',
-      'GPU: RTX PRO 6000 Ada 96GB',
+      'GPU: RTX PRO 6000 Blackwell 96GB',
       'SSD: 4TB Gen5 + 2×4TB',
     ],
     apps: [
@@ -187,7 +187,7 @@ export const NODES: Record<string, NodeData> = {
     hardware: [
       'CPU: Intel Ultra 9 285K',
       'RAM: 128GB DDR5',
-      'GPU: RTX PRO 6000 Ada 96GB',
+      'GPU: RTX PRO 6000 Blackwell 96GB',
       'SSD: 4TB Gen5 + 2×4TB',
     ],
     apps: [
@@ -227,7 +227,7 @@ export const NODES: Record<string, NodeData> = {
     siteId: 'remote-wm',
     hardware: [
       'CPU: AMD Ryzen 9 9950X',
-      'RAM: 128GB DDR5-5600 (4×32GB Kingston KF556C40, arriving Mar 11)',
+      'RAM: 128GB DDR5-5600 (4×32GB Kingston KF556C40)',
       'GPU: RTX 5080 16GB',
     ],
     apps: [
@@ -239,15 +239,15 @@ export const NODES: Record<string, NodeData> = {
     interfaces: [
       { label: 'Edge4 VPN', speed: 'VPN', target: 'ER4 Gateway → MS510TXUP Port 2', color: 'wan' },
       { label: 'Tailscale', speed: 'WireGuard', target: 'Mesh VPN', color: 'tailscale' },
-      { label: 'JARVIS Colo (SSH tunnel)', speed: 'VPN tunnel', target: '4× L40S GPU inference server', color: 'wan' },
+      { label: 'JARVIS Colo (SSH tunnel)', speed: 'VPN tunnel', target: '2× L40S GPU inference server', color: 'wan' },
     ],
     services: [
       { name: 'Ollama', port: '11434', detail: 'Local inference on RTX 5080' },
-      { name: 'JARVIS Colo Access', detail: 'SSH tunnel to 4× L40S 48GB for heavy inference (port 11434 → VPN tunnel)' },
+      { name: 'JARVIS Colo Access', detail: 'SSH tunnel to 2× L40S 48GB for heavy inference (port 11434 open + VPN tunnel)' },
     ],
     notes: [
       'Remote machine — connects to lab via ER4 VPN gateway',
-      'RAM arriving Wed Mar 11 → shipping to Jeremy Thu Mar 12',
+      'RAM shipped to Jeremy Mar 12',
       'Windows username: Jeremy',
     ],
   },
@@ -293,24 +293,31 @@ export const NODES: Record<string, NodeData> = {
     siteId: 'boca-colo',
     hardware: [
       'Model: Dell R760xa',
-      'GPU: 4× NVIDIA L40S 48GB (192GB Total VRAM)',
+      'GPU: 2× NVIDIA L40S 48GB (96GB Total VRAM)',
       'Location: Revelex Colo — 6405 Congress Ave, Boca Raton FL',
+      'LAN: 192.168.15.2 / 192.168.15.3',
     ],
     apps: [
-      { name: 'Ollama', category: 'ai', detail: 'Heavy inference — 4× L40S 192GB VRAM', port: '11434' },
+      { name: 'Ollama', category: 'ai', detail: 'Heavy inference — 2× L40S 96GB VRAM', port: '11434' },
     ],
     interfaces: [
-      { label: 'VPN Gateway', speed: 'VPN', target: 'Juniper VPN — .24', color: 'wan' },
-      { label: 'SSH (ai-tool-hb)', speed: 'SSH', target: '.25 — primary access', color: 'wan' },
-      { label: 'SSH (yourcoa-firewalled)', speed: 'SSH', target: '.26 — Jose needed for access', color: 'wan' },
-      { label: 'iDRAC', speed: 'IPMI', target: '.23 — out-of-band management', color: 'wan' },
+      { label: 'Site-to-Site VPN', speed: 'VPN', target: 'Meraki↔Juniper S2S VPN (live Feb 18)', color: 'wan' },
+      { label: 'VPN Gateway', speed: 'VPN', target: '204.10.144.24 — Juniper endpoint', color: 'wan' },
+      { label: 'SSH (ai-tool-hb)', speed: 'SSH', target: '204.10.144.25 — primary access', color: 'wan' },
+      { label: 'SSH (yourcoa-firewalled)', speed: 'SSH', target: '204.10.144.26 — Jose needed for access', color: 'wan' },
+      { label: 'iDRAC', speed: 'IPMI', target: '204.10.144.23 — out-of-band management', color: 'wan' },
+      { label: 'LAN (eth0)', speed: '1GbE', target: '192.168.15.2 — internal colo LAN', color: 'lan' },
+      { label: 'LAN (eth1)', speed: '1GbE', target: '192.168.15.3 — internal colo LAN', color: 'lan' },
     ],
     services: [
-      { name: 'Ollama', port: '11434', detail: 'BLOCKED externally — access via SSH tunnel only (Jose for .26 access)' },
-      { name: 'iDRAC', detail: '.23 — out-of-band server management' },
+      { name: 'Ollama', port: '11434', detail: 'Port OPEN (Feb 17) — accessible via VPN + SSH tunnel' },
+      { name: 'Site-to-Site VPN', detail: 'Meraki↔Juniper — lab-to-colo link live since Feb 18' },
+      { name: 'iDRAC', detail: '204.10.144.23 — out-of-band server management' },
     ],
     notes: [
-      'Port 11434 blocked — must SSH tunnel for Ollama access',
+      'Port 11434 OPEN since Feb 17 — accessible via site-to-site VPN',
+      'Site-to-site VPN: Meraki (lab) ↔ Juniper (colo) — live since Feb 18',
+      'Public IPs: .23 (iDRAC), .24 (VPN), .25 (ai-tool-hb), .26 (yourcoa), .30 (gateway)',
       'Jose Almodovar (x235) needed for SSH to .26 + MySQL creds',
       'Subnet /26 • Russ Gnann (x260) for network changes',
     ],
@@ -421,7 +428,7 @@ export const NODES: Record<string, NodeData> = {
       { port: '5', speed: '10G', device: 'SENTINEL (10.2.10.70)', notes: 'Primary inference, RTX 5090' },
       { port: '6', speed: '10G', device: 'IRON-PATRIOT (10.2.10.71)', notes: 'Docker/monitoring, RTX PRO 6000' },
       { port: '7', speed: '10G', device: 'JERICHO (10.2.10.35)', notes: 'Primary dev, RTX PRO 6000' },
-      { port: '8', speed: '10G', device: 'IRONMAN (TBD)', notes: 'Threadripper PRO — future primary' },
+      { port: '8', speed: '10G', device: 'IRONMAN (10.2.10.TBD)', notes: 'Threadripper PRO 9995WX — flagship compute' },
       { port: '9 (SFP+)', speed: '10G', device: 'Spare', notes: 'Future 10G uplink or inter-switch' },
       { port: '10 (SFP+)', speed: '10G', device: 'Spare', notes: 'Future expansion' },
     ],
@@ -446,15 +453,15 @@ export const NODES: Record<string, NodeData> = {
     services: [],
     notes: [
       'Dedicated AI fabric — isolated from general LAN',
-      'Subnet: 10.2.20.x',
+      'Subnet: 10.0.100.0/24',
       'All nodes use ConnectX-5 VPI NICs for RDMA',
+      'RoCEv2 enabled — zero-copy model weight transfer between nodes',
     ],
     ports: [
-      { port: '1', speed: '100GbE', device: 'SENTINEL (10.2.10.70)', notes: 'ConnectX-5 VPI' },
-      { port: '2', speed: '100GbE', device: 'IRON-PATRIOT (10.2.10.71)', notes: 'ConnectX-5 VPI' },
-      { port: '3', speed: '100GbE', device: 'JERICHO (10.2.10.35)', notes: 'ConnectX-5 VPI' },
-      { port: '4', speed: '100GbE', device: 'IRONMAN (TBD)', notes: 'ConnectX-5 VPI — reserve now' },
-      { port: '5-16', speed: '100GbE', device: 'Spare', notes: 'Future nodes / expansion' },
+      { port: '1', speed: '100GbE', device: 'IRONMAN (10.0.100.10)', notes: 'ConnectX-5 VPI — flagship compute' },
+      { port: '2', speed: '100GbE', device: 'IRON-PATRIOT (10.0.100.20)', notes: 'ConnectX-5 VPI — Docker/monitoring' },
+      { port: '3', speed: '100GbE', device: 'JERICHO (10.0.100.30)', notes: 'ConnectX-5 VPI — primary dev' },
+      { port: '4-16', speed: '100GbE', device: 'Spare', notes: 'Future nodes / expansion' },
     ],
   },
 

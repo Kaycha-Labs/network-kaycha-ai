@@ -1,9 +1,9 @@
 export function FooterStats() {
   const stats = [
-    { label: 'Total VRAM', value: '624 GB', color: '#f59e0b' },
+    { label: 'Total VRAM', value: '528 GB', color: '#f59e0b' },
     { label: 'Machines', value: '10', color: '#dc2626' },
     { label: 'AI Fabric', value: '100 GbE', color: '#34d399' },
-    { label: 'GPUs', value: '10 GPUs', color: '#f472b6' },
+    { label: 'GPUs', value: '8 GPUs', color: '#f472b6' },
     { label: 'Total RAM', value: '832+ GB', color: '#00d4ff' },
   ]
 

@@ -238,7 +238,7 @@ function BocaLabDetail({ activeModal, openModal }: SiteDetailProps) {
       {c('ironpatriot', 60, 555, 355, 135, [
         'CPU: Intel Ultra 9 285K',
         'RAM: 128GB DDR5',
-        'GPU: RTX PRO 6000 Ada 96GB',
+        'GPU: RTX PRO 6000 Blackwell 96GB',
         'SSD: 4TB Gen5 + 2×4TB',
         'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
         '10.2.10.71 • TS: 100.75.25.51',
@@ -246,7 +246,7 @@ function BocaLabDetail({ activeModal, openModal }: SiteDetailProps) {
       {c('jericho', 445, 555, 355, 135, [
         'CPU: Intel Ultra 9 285K',
         'RAM: 128GB DDR5',
-        'GPU: RTX PRO 6000 Ada 96GB',
+        'GPU: RTX PRO 6000 Blackwell 96GB',
         'SSD: 4TB Gen5 + 2×4TB',
         'NIC1: 2.5GbE → MS510  •  NIC2: CX-5 → SN2100',
         '10.2.10.35 • TS: 100.85.6.71',
@@ -339,8 +339,8 @@ function BocaColoDetail({ activeModal, openModal }: SiteDetailProps) {
 
       {c('jarvis', 60, 140, 350, 140, [
         'Dell R760xa • Boca Raton Colo',
-        'GPU: 4× NVIDIA L40S 48GB (192GB Total VRAM)',
-        'Ollama :11434 (SSH tunnel only)',
+        'GPU: 2× NVIDIA L40S 48GB (96GB Total VRAM)',
+        'Ollama :11434 (port OPEN + S2S VPN)',
         'SSH: .25 (ai-tool-hb) / .26 (yourcoa)',
         'iDRAC: .23 — out-of-band mgmt',
         'Jose Almodovar (x235) for .26 access',
@@ -387,7 +387,7 @@ function SimpleSiteDetail({ siteId, activeModal, openModal }: SiteDetailProps) {
   const specs: Record<string, string[]> = {
     'warmachine': [
       "CPU: AMD Ryzen 9 9950X • Jeremy's Machine",
-      'RAM: 128GB DDR5 (arrives Mar 11)',
+      'RAM: 128GB DDR5',
       'GPU: RTX 5080 16GB',
       'Remote via Edge4 VPN + Tailscale',
       'Ollama local + SSH tunnel to JARVIS colo',

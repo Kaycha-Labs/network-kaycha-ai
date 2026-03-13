@@ -1,17 +1,43 @@
+import { useState } from 'react'
 import { C } from '../constants/colors'
+import {
+  TESTING_STATS,
+  STANDARD_CATEGORY_IDS,
+  GROUP_COLORS,
+  CI_JOBS,
+  TEST_SCRIPTS,
+} from '../data/testing-stats'
+import type { CategoryStats } from '../data/testing-stats'
+
+const S = TESTING_STATS
 
 /* ── Reusable sub-components ─────────────────────────────── */
 
-function Phase({ label, color, children }: { label: string; color: string; children: React.ReactNode }) {
+function Phase({
+  label, color, children, defaultOpen = true,
+}: {
+  label: string; color: string; children: React.ReactNode; defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
   return (
-    <div className="relative rounded-xl border p-5 pt-6" style={{ borderColor: color + '30' }}>
-      <div
-        className="absolute -top-2.5 left-5 px-2.5 text-[11px] font-semibold uppercase tracking-widest"
-        style={{ color, background: C.bg }}
+    <div className="relative rounded-xl border" style={{ borderColor: color + '30' }}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center gap-2 px-5 py-2.5 text-left cursor-pointer rounded-xl transition-colors"
+        style={{ background: open ? 'transparent' : color + '06' }}
       >
-        {label}
-      </div>
-      {children}
+        <span
+          className="text-[11px] font-semibold uppercase tracking-widest flex-1"
+          style={{ color }}
+        >
+          {label}
+        </span>
+        <span className="text-[11px]" style={{ color: C.textDim }}>
+          {open ? '▾' : '▸'}
+        </span>
+      </button>
+      {open && <div className="px-5 pb-5">{children}</div>}
     </div>
   )
 }
@@ -122,6 +148,134 @@ const legendItems = [
   { color: '#2dd4bf', label: 'Observability' },
 ]
 
+/* ── Category Card ────────────────────────────────────────── */
+
+function CategoryCard({ cat }: { cat: CategoryStats }) {
+  const color = GROUP_COLORS[cat.group]
+  return (
+    <div
+      className="rounded-lg border p-2.5 flex items-start gap-2 min-w-[190px]"
+      style={{ borderColor: color + '25', background: color + '08' }}
+    >
+      <span className="text-base flex-shrink-0">{cat.icon}</span>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-semibold" style={{ color }}>{cat.label}</span>
+          <span className="text-[10px] font-mono" style={{ color: C.textDim }}>
+            {cat.testCount} {cat.testCount === 1 ? 'spec' : 'specs'}
+          </span>
+        </div>
+        <div className="text-[9.5px] mt-0.5 leading-snug" style={{ color: C.textDim }}>
+          {cat.description}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── App × Category Coverage Matrix ──────────────────────── */
+
+function CoverageMatrix() {
+  const apps = S.apps
+  const cats = STANDARD_CATEGORY_IDS
+  const matrix = S.coverageMatrix
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-[10px] border-collapse">
+        <thead>
+          <tr>
+            <th className="text-left py-1 px-2 font-semibold" style={{ color: C.textDim }}>Category</th>
+            {apps.map(a => (
+              <th key={a.name} className="py-1 px-1.5 font-semibold text-center" style={{ color: C.textBright }}>
+                {a.displayName}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {cats.map(catId => {
+            const catDef = S.categories.find(c => c.id === catId)
+            const color = catDef ? GROUP_COLORS[catDef.group] : C.textDim
+            return (
+              <tr key={catId} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <td className="py-1 px-2 font-medium" style={{ color }}>
+                  {catDef?.icon} {catDef?.label ?? catId}
+                </td>
+                {apps.map(a => {
+                  const has = matrix[a.name]?.[catId]
+                  return (
+                    <td key={a.name} className="py-1 px-1.5 text-center">
+                      {has
+                        ? <span className="inline-block w-3 h-3 rounded-sm" style={{ background: color + '60' }} />
+                        : <span className="inline-block w-3 h-3 rounded-sm" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                      }
+                    </td>
+                  )
+                })}
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+      <div className="text-[9px] text-center mt-2" style={{ color: C.textDim }}>
+        Filled = spec file exists for that app × category combination
+      </div>
+    </div>
+  )
+}
+
+/* ── CI Jobs Grid ─────────────────────────────────────────── */
+
+function CIJobsGrid() {
+  return (
+    <div className="flex justify-center gap-2 flex-wrap">
+      {CI_JOBS.map(job => (
+        <div
+          key={job}
+          className="rounded border px-2.5 py-1.5 text-[10px] font-medium"
+          style={{ borderColor: C.red + '30', background: C.red + '08', color: '#fca5a5' }}
+        >
+          {job}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ── Script Reference ─────────────────────────────────────── */
+
+function ScriptPanel() {
+  const [expanded, setExpanded] = useState(false)
+  const visible = expanded ? TEST_SCRIPTS : TEST_SCRIPTS.slice(0, 8)
+
+  return (
+    <div className="rounded-xl border p-4" style={{ borderColor: C.teal + '30' }}>
+      <div className="text-[11px] font-semibold mb-3" style={{ color: C.teal }}>
+        TEST SCRIPTS ({TEST_SCRIPTS.length} commands)
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+        {visible.map(s => (
+          <div key={s.cmd} className="flex items-baseline gap-2 py-0.5">
+            <code className="text-[9.5px] font-mono flex-shrink-0" style={{ color: C.teal }}>{s.cmd}</code>
+            <span className="text-[9px]" style={{ color: C.textDim }}>{s.description}</span>
+          </div>
+        ))}
+      </div>
+      {TEST_SCRIPTS.length > 8 && (
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="mt-2 text-[10px] font-medium cursor-pointer"
+          style={{ color: C.teal }}
+        >
+          {expanded ? 'Show less ▴' : `Show all ${TEST_SCRIPTS.length} scripts ▾`}
+        </button>
+      )}
+    </div>
+  )
+}
+
 /* ── Main Component ──────────────────────────────────────── */
 
 export function TestingView() {
@@ -147,6 +301,17 @@ export function TestingView() {
             {l.label}
           </div>
         ))}
+      </div>
+
+      {/* ── Summary Stats (data-driven) ──────────────────── */}
+      <div className="flex justify-center gap-3 flex-wrap pb-3">
+        <StatCard value={`${S.totals.tests}+`} label="Total Tests" color={C.green100g} />
+        <StatCard value={String(S.totals.specFiles)} label="Spec Files" color={C.blue} />
+        <StatCard value={String(S.ci.parallelJobs)} label="CI Jobs" color={C.red} />
+        <StatCard value={String(S.ci.browsers.length)} label="Browsers" color={C.orange} />
+        <StatCard value={String(S.ci.viewports.length)} label="Viewports" color={C.pink} />
+        <StatCard value={String(S.totals.categories)} label="Categories" color={C.purple} />
+        <StatCard value={String(S.totals.apps)} label="Apps" color={C.teal} />
       </div>
 
       {/* ── PHASE 1 — Test Planning ──────────────────────── */}
@@ -214,69 +379,59 @@ export function TestingView() {
         </HFlow>
 
         <div className="mt-2">
-          <Sub>workers: 3 · Per-role test users eliminate auth contention · Session caching minimizes API calls · 522 detection prevents false failures</Sub>
+          <Sub>workers: {S.ci.workers} · Per-role test users eliminate auth contention · Session caching minimizes API calls · 522 detection prevents false failures</Sub>
         </div>
       </Phase>
 
       <Arrow />
 
-      {/* ── PHASE 4 — Test Categories ────────────────────── */}
-      <Phase label="Phase 4 — Test Categories &amp; Execution Matrix" color={C.green100g}>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="rounded-lg border p-3" style={{ borderColor: C.green100g + '30', background: 'rgba(52,211,153,0.05)' }}>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: '#6ee7b7' }}>Functional</div>
-            <div className="space-y-1 text-[10px]" style={{ color: C.textDim }}>
-              <div>Auth &amp; session persistence</div>
-              <div>Page rendering &amp; content</div>
-              <div>Search &amp; filtering</div>
-              <div>CRUD lifecycle (API-first)</div>
-              <div>Route coverage (sidebar nav)</div>
-              <div>Feature interactions</div>
+      {/* ── PHASE 4 — All 16 Test Categories ─────────────── */}
+      <Phase label={`Phase 4 — Test Categories (${S.totals.categories} types)`} color={C.green100g}>
+        {/* Group headers + category cards */}
+        {(['functional', 'security', 'performance', 'quality'] as const).map(group => {
+          const cats = S.categories.filter(c => c.group === group)
+          const color = GROUP_COLORS[group]
+          return (
+            <div key={group} className="mb-3">
+              <div className="text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color }}>
+                {group} ({cats.length})
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                {cats.map(cat => <CategoryCard key={cat.id} cat={cat} />)}
+              </div>
             </div>
-          </div>
+          )
+        })}
 
-          <div className="rounded-lg border p-3" style={{ borderColor: C.purple + '30', background: 'rgba(139,92,246,0.05)' }}>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: '#c4b5fd' }}>Security &amp; Access</div>
-            <div className="space-y-1 text-[10px]" style={{ color: C.textDim }}>
-              <div>RBAC per-role verification</div>
-              <div>Security headers (CSP, HSTS)</div>
-              <div>Session expiry &amp; logout</div>
-              <div>XSS / SQL injection payloads</div>
-              <div>Unauthenticated access guards</div>
-              <div>Back-button protection</div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border p-3" style={{ borderColor: C.orange + '30', background: 'rgba(251,146,60,0.05)' }}>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: '#fdba74' }}>Performance &amp; Resilience</div>
-            <div className="space-y-1 text-[10px]" style={{ color: C.textDim }}>
-              <div>Dashboard load time / TTFB / LCP</div>
-              <div>Core Web Vitals (CLS, FCP, INP)</div>
-              <div>Resource count &amp; transfer size</div>
-              <div>JS heap memory growth (CDP)</div>
-              <div>Offline mode &amp; network errors</div>
-              <div>Rate limiting (429) handling</div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border p-3" style={{ borderColor: C.pink + '30', background: 'rgba(244,114,182,0.05)' }}>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: '#f9a8d4' }}>Quality &amp; UX</div>
-            <div className="space-y-1 text-[10px]" style={{ color: C.textDim }}>
-              <div>Accessibility (WCAG 2.1 AA axe-core)</div>
-              <div>Visual regression (screenshots)</div>
-              <div>Responsive (mobile + tablet)</div>
-              <div>User journeys (multi-step flows)</div>
-              <div>Edge cases (pagination, unicode)</div>
-              <div>API response interception</div>
-            </div>
-          </div>
+        <div className="mt-2 flex justify-center gap-2 flex-wrap">
+          <Badge color={GROUP_COLORS.functional}>Functional {S.categories.filter(c => c.group === 'functional').length} categories</Badge>
+          <Badge color={GROUP_COLORS.security}>Security {S.categories.filter(c => c.group === 'security').length} categories</Badge>
+          <Badge color={GROUP_COLORS.performance}>Performance {S.categories.filter(c => c.group === 'performance').length} categories</Badge>
+          <Badge color={GROUP_COLORS.quality}>Quality {S.categories.filter(c => c.group === 'quality').length} categories</Badge>
         </div>
+      </Phase>
 
+      <Arrow />
+
+      {/* ── Per-App Coverage Matrix ──────────────────────── */}
+      <Phase label={`Coverage Matrix — ${S.totals.apps} Apps × ${S.totals.categories} Categories`} color={C.accent}>
+        <CoverageMatrix />
+
+        {/* App summary row */}
         <div className="mt-3 flex justify-center gap-2 flex-wrap">
-          <Badge color={C.green100g}>Functional ~400 tests</Badge>
-          <Badge color={C.purple}>Security ~50 tests</Badge>
-          <Badge color={C.orange}>Perf ~40 tests</Badge>
-          <Badge color={C.pink}>Quality ~260 tests</Badge>
+          {S.apps.map(a => (
+            <div
+              key={a.name}
+              className="rounded border px-2.5 py-1.5 text-center"
+              style={{ borderColor: 'rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)' }}
+            >
+              <div className="text-[11px] font-semibold" style={{ color: C.textBright }}>{a.displayName}</div>
+              <div className="text-[10px]" style={{ color: C.textDim }}>
+                {a.specFiles} specs · {a.authMode === 'cookie' ? '🍪 SSR' : '💾 SPA'}
+              </div>
+              <div className="text-[9px] font-mono mt-0.5" style={{ color: C.textDim }}>{a.url}</div>
+            </div>
+          ))}
         </div>
       </Phase>
 
@@ -299,19 +454,24 @@ export function TestingView() {
         <div className="h-2" />
 
         <div className="flex justify-center gap-3 flex-wrap">
-          <BranchColumn label="MOBILE (375×812)" color={C.pink}>
-            <Node icon="📱" title="Mobile Viewport" detail="isMobile: true. Touch targets (>24px), horizontal overflow (<115%), text readability (>10px), viewport meta tag." variant="report" />
-          </BranchColumn>
-          <BranchColumn label="TABLET (768×1024)" color={C.purple}>
-            <Node icon="📲" title="Tablet Viewport" detail="isMobile: false. Layout responsiveness, sidebar collapse/toggle, content reflow, grid breakpoints." variant="category" />
-          </BranchColumn>
-          <BranchColumn label="DESKTOP (1280×800)" color={C.teal}>
-            <Node icon="🖥️" title="Desktop Viewport" detail="Default viewport. Full sidebar, multi-column layouts, hover interactions, data tables." variant="observe" />
-          </BranchColumn>
+          {S.ci.viewports.map(vp => (
+            <BranchColumn key={vp.name} label={`${vp.name.toUpperCase()} (${vp.width}×${vp.height})`} color={vp.name === 'Mobile' ? C.pink : vp.name === 'Tablet' ? C.purple : C.teal}>
+              <Node
+                icon={vp.name === 'Mobile' ? '📱' : vp.name === 'Tablet' ? '📲' : '🖥️'}
+                title={`${vp.name} Viewport`}
+                detail={
+                  vp.name === 'Mobile' ? 'isMobile: true. Touch targets (>24px), horizontal overflow (<115%), text readability (>10px), viewport meta tag.'
+                  : vp.name === 'Tablet' ? 'isMobile: false. Layout responsiveness, sidebar collapse/toggle, content reflow, grid breakpoints.'
+                  : 'Default viewport. Full sidebar, multi-column layouts, hover interactions, data tables.'
+                }
+                variant={vp.name === 'Mobile' ? 'report' : vp.name === 'Tablet' ? 'category' : 'observe'}
+              />
+            </BranchColumn>
+          ))}
         </div>
 
         <div className="mt-2">
-          <Sub>3 browsers × 3 viewports × N apps = comprehensive cross-platform coverage · Dedicated responsive test files (not desktop tests at small viewports)</Sub>
+          <Sub>{S.ci.browsers.length} browsers × {S.ci.viewports.length} viewports × {S.totals.apps} apps = comprehensive cross-platform coverage · Dedicated responsive test files (not desktop tests at small viewports)</Sub>
         </div>
       </Phase>
 
@@ -320,17 +480,22 @@ export function TestingView() {
       {/* ── PHASE 6 — CI Pipeline ────────────────────────── */}
       <Phase label="Phase 6 — CI / CD Integration" color={C.red}>
         <HFlow>
-          <Node icon="🔀" title="Trigger" detail="Push to main, pull request, or manual dispatch. GitHub Actions workflow with shared env block for secrets." file=".github/workflows/e2e.yml" variant="ci" />
+          <Node icon="🔀" title="Trigger" detail="Push to main, pull request, or manual dispatch. GitHub Actions workflow with shared env block for secrets." file={S.ci.workflowFile} variant="ci" />
           <HArrow />
-          <WideNode icon="⚡" title="11 Parallel Jobs" detail="Chromium · Firefox · WebKit · Responsive · API · Perf · Visual · A11y · Security · Resilience · Edge-Cases — each job caches Playwright browsers independently." variant="ci" />
+          <WideNode icon="⚡" title={`${S.ci.parallelJobs} Parallel Jobs`} detail={`${CI_JOBS.join(' · ')} — each job caches Playwright browsers independently.`} variant="ci" />
           <HArrow />
-          <Node icon="📦" title="Artifacts" detail="HTML report + failure screenshots/videos uploaded on every run. 14-day retention for reports, 7-day for test results." variant="ci" />
+          <Node icon="📦" title="Artifacts" detail={`HTML report + failure screenshots/videos uploaded on every run. ${S.ci.artifactRetention.reports}-day retention for reports, ${S.ci.artifactRetention.results}-day for test results.`} variant="ci" />
         </HFlow>
 
         <div className="h-3" />
 
+        {/* CI Jobs Grid */}
+        <CIJobsGrid />
+
+        <div className="h-3" />
+
         <HFlow>
-          <Node icon="🔒" title="Secrets Management" detail="24 environment variables for service_role + anon keys across all apps. Set as GitHub Secrets, injected via workflow env block." variant="guard" />
+          <Node icon="🔒" title="Secrets Management" detail={`${S.ci.envVarCount} environment variables for service_role + anon keys across all apps. Set as GitHub Secrets, injected via workflow env block.`} variant="guard" />
           <HArrow />
           <Node icon="🖼️" title="Visual Baselines" detail="Auto-generated on CI (Ubuntu). Linux snapshots created with --update-snapshots when fewer than 5 baselines exist." variant="report" />
           <HArrow />
@@ -340,7 +505,7 @@ export function TestingView() {
         <div className="mt-2">
           <Sub highlight={C.red}>
             <strong style={{ color: '#fca5a5' }}>CI Config:</strong>
-            {' headless: CI=true · retries: 1 in CI (0 locally) · workers: 3 · timeout: 30s · ubuntu-latest · pnpm 9 · Node 20 · Browser cache by pnpm-lock.yaml hash'}
+            {` headless: CI=true · retries: ${S.ci.retries.ci} in CI (${S.ci.retries.local} locally) · workers: ${S.ci.workers} · timeout: ${S.ci.timeout}s · ${S.ci.runner} · pnpm ${S.ci.pnpmVersion} · Node ${S.ci.nodeVersion} · Browser cache by pnpm-lock.yaml hash`}
           </Sub>
         </div>
       </Phase>
@@ -356,7 +521,7 @@ export function TestingView() {
         </div>
 
         <div className="flex justify-center gap-3 flex-wrap">
-          <Node icon="🔄" title="Retry Logic" detail="Auth retry once on expired/invalid magic link. No test-level retries locally (retries: 0). CI retries: 1 for flake tolerance." variant="guard" />
+          <Node icon="🔄" title="Retry Logic" detail={`Auth retry once on expired/invalid magic link. No test-level retries locally (retries: ${S.ci.retries.local}). CI retries: ${S.ci.retries.ci} for flake tolerance.`} variant="guard" />
           <Node icon="🏷️" title="[E2E] Marker" detail="All test-created data prefixed with [E2E]. globalTeardown sweeps orphaned records from all app databases after suite completion." variant="guard" />
           <Node icon="📏" title="Perf Annotations" detail="Tests annotate perf metrics (load times, LCP, TTFB). Custom reporter collects annotations for trend analysis." variant="observe" />
         </div>
@@ -375,7 +540,7 @@ export function TestingView() {
           <HArrow />
           <Node icon="📋" title="List Reporter" detail="Real-time console output during test execution. Shows pass/fail/skip status as tests complete." variant="observe" />
           <HArrow />
-          <WideNode icon="📊" title="JSON Summary Reporter" detail="Custom reporter: per-app stats (passed/failed/skipped), per-category breakdown (functional/api/perf/security/a11y/visual/edge-cases), perf annotations, failure details." file="lib/json-summary-reporter.js → test-summary.json" variant="observe" />
+          <WideNode icon="📊" title="JSON Summary Reporter" detail="Custom reporter: per-app stats (passed/failed/skipped), per-category breakdown, perf annotations, failure details." file="lib/json-summary-reporter.js → test-summary.json" variant="observe" />
         </HFlow>
 
         <div className="h-3" />
@@ -393,6 +558,11 @@ export function TestingView() {
           </Sub>
         </div>
       </Phase>
+
+      {/* ── Script Reference Panel ────────────────────────── */}
+      <div className="mt-4">
+        <ScriptPanel />
+      </div>
 
       {/* ── Process Flow Diagram ─────────────────────────── */}
       <div className="mt-6">
@@ -421,7 +591,7 @@ export function TestingView() {
           <div className="flex items-start justify-center gap-2 flex-wrap">
             <FlowStep step="5" title="Auth Injection" detail="Magic link → session" color={C.warning} />
             <FlowArrow />
-            <FlowStep step="6" title="Run Tests" detail="3 workers parallel" color={C.green100g} />
+            <FlowStep step="6" title="Run Tests" detail={`${S.ci.workers} workers parallel`} color={C.green100g} />
             <FlowArrow />
             <FlowStep step="7" title="Cross-Browser" detail="Chromium + FF + WK" color={C.red} />
             <FlowArrow />
@@ -481,19 +651,9 @@ export function TestingView() {
         </div>
       </div>
 
-      {/* ── Summary Stats ────────────────────────────────── */}
-      <div className="flex justify-center gap-3 flex-wrap pt-6">
-        <StatCard value="750+" label="Total Tests" color={C.green100g} />
-        <StatCard value="170+" label="Test Files" color={C.blue} />
-        <StatCard value="11" label="CI Jobs" color={C.red} />
-        <StatCard value="3" label="Browsers" color={C.orange} />
-        <StatCard value="3" label="Viewports" color={C.pink} />
-        <StatCard value="8" label="Test Categories" color={C.purple} />
-      </div>
-
-      {/* Footer */}
+      {/* Footer (dynamic date) */}
       <div className="text-center pt-6 pb-2 text-[11px]" style={{ color: '#475569' }}>
-        E2E Testing Architecture · Kaycha Labs · March 2026
+        E2E Testing Architecture · Kaycha Labs · Updated {new Date(S.lastUpdated).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
       </div>
     </div>
   )

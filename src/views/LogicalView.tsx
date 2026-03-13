@@ -81,7 +81,7 @@ export function LogicalView() {
           <Section title="IRON-PATRIOT — Worker Node" color={C.purple} nodeId="ironpatriot" onNodeClick={openModal}>
             <ServiceCard name="Ollama Worker :11434" color={C.purple} details={[
               'Qwen3 32B / CodeLlama 34B',
-              '96GB VRAM (RTX PRO 6000 Ada)',
+              '96GB VRAM (RTX PRO 6000 Blackwell)',
               'ConnectX-5 100GbE • 10.0.100.20',
             ]} />
             <ServiceCard name="Grafana :3000 + Prometheus :9090" color={C.purple} details={[
@@ -97,7 +97,7 @@ export function LogicalView() {
             <ServiceCard name="Docker Host + Ollama Worker :11434" color={C.purple} details={[
               'Open WebUI / JARVIS-OPS containers',
               'Qwen3 32B / Mistral / embed models',
-              '96GB VRAM (RTX PRO 6000 Ada)',
+              '96GB VRAM (RTX PRO 6000 Blackwell)',
               'ConnectX-5 100GbE • 10.0.100.30',
               'Auto-start configured',
             ]} />
@@ -160,7 +160,7 @@ export function LogicalView() {
           <Section title="WAR-MACHINE — Jeremy (Remote)" color={C.blue} nodeId="warmachine" onNodeClick={openModal}>
             <ServiceCard name="Remote Dev Workstation" color={C.blue} details={[
               'AMD Ryzen 9 9950X • RTX 5080 16GB',
-              '128GB DDR5 (RAM arriving Mar 11)',
+              '128GB DDR5',
               'Ollama :11434 + JARVIS colo inference access',
               'Edge4 VPN → ER4 Gateway (MS510 Port 2)',
             ]} />
@@ -180,7 +180,7 @@ export function LogicalView() {
               <ServiceCard name="Cloudflare" color={C.warning} details={['12 zones', 'Workers + D1', 'DNS + CDN']} />
               <ServiceCard name="Netlify" color={C.cyan10g} details={['6 sites', 'Serverless Functions', 'CI/CD deploys']} />
               <ServiceCard name="GitHub" color={C.textBright} details={['Kaycha-Labs org', 'Jamesjhf1 personal', 'Actions CI + DocGen']} />
-              <ServiceCard name="JARVIS Colo" color={C.purple} details={['Dell R760xa', 'Revelex Boca Raton', '4× L40S 48GB (192GB VRAM)']} />
+              <ServiceCard name="JARVIS Colo" color={C.purple} details={['Dell R760xa', 'Revelex Boca Raton', '2× L40S 48GB (96GB VRAM)']} />
             </div>
           </Section>
 
@@ -192,7 +192,7 @@ export function LogicalView() {
                 { name: 'IRON-PATRIOT', vram: 96, color: C.purple, net: '100GbE' },
                 { name: 'JERICHO', vram: 96, color: C.purple, net: '100GbE' },
                 { name: 'SENTINEL', vram: 32, color: C.pink, net: '2.5GbE' },
-                { name: 'JARVIS (colo)', vram: 192, color: '#10b981', net: 'VPN' },
+                { name: 'JARVIS (colo)', vram: 96, color: '#10b981', net: 'VPN' },
               ].map(m => (
                 <div key={m.name} className="flex items-center gap-2">
                   <span className="text-[10px] w-20 font-semibold" style={{ color: m.color }}>{m.name}</span>
@@ -208,10 +208,10 @@ export function LogicalView() {
               ))}
               <div className="flex items-center justify-between pt-2 border-t" style={{ borderColor: C.border }}>
                 <span className="text-[10px] font-bold" style={{ color: C.warning }}>LOCAL FLEET TOTAL</span>
-                <span className="text-xs font-bold" style={{ color: C.warning }}>416GB VRAM</span>
+                <span className="text-xs font-bold" style={{ color: C.warning }}>432GB VRAM</span>
               </div>
               <div className="text-[10px]" style={{ color: C.green100g }}>
-                384GB on 100GbE fabric • 32GB on 2.5GbE LAN • +192GB colo via VPN
+                384GB on 100GbE fabric • 32GB on 2.5GbE LAN • +96GB colo via VPN
               </div>
             </div>
           </Section>
