@@ -39,6 +39,82 @@ export interface Skill {
   description: string
 }
 
+/* ── Unified Software Stack (all workstations matched) ──── */
+
+const UNIFIED_CATEGORIES: SoftwareCategory[] = [
+  {
+    id: 'ai', label: 'AI / ML', icon: '🧠', color: C.purple,
+    items: [
+      { name: 'Ollama', version: '0.18.0', description: 'Local LLM inference server — hosts models for the fleet' },
+      { name: 'NVIDIA CUDA Toolkit', version: '13.2', description: 'GPU compute platform for ML workloads' },
+      { name: 'NVIDIA Nsight Compute', version: '2026.1.0', description: 'GPU kernel profiling and optimization tool' },
+      { name: 'NVIDIA Nsight Systems', version: '2025.6.3', description: 'System-wide performance analysis for GPU workloads' },
+    ],
+  },
+  {
+    id: 'dev', label: 'Development', icon: '⌨', color: C.accent,
+    items: [
+      { name: 'VS Code', version: '1.109.5', description: 'Lightweight code editor for quick edits and debugging' },
+      { name: 'Cursor', version: '2.6.19', description: 'AI-powered code editor (Claude/GPT integrated)' },
+      { name: 'Claude Desktop', version: 'latest', description: 'Anthropic Claude desktop client with MCP support' },
+      { name: 'Visual Studio Build Tools', version: '17.14.28', description: 'C/C++ compiler toolchain for native extensions' },
+      { name: '.NET SDK', version: '9.0.312', description: 'Full .NET development kit' },
+      { name: 'Node.js', version: '24.14.0', description: 'JavaScript runtime for server-side apps and tooling' },
+      { name: 'Python', version: '3.14.3', description: 'Primary scripting language for automation and ML' },
+      { name: 'PowerShell 7', version: '7.5.5', description: 'Cross-platform shell and scripting framework' },
+      { name: 'GitHub CLI', version: '2.88.1', description: 'Command-line interface for GitHub operations' },
+      { name: 'Git LFS', version: '3.6.1', description: 'Large file storage extension for Git repos' },
+      { name: 'Rustup', version: '1.28.2', description: 'Rust toolchain installer and version manager' },
+      { name: 'uv', version: '0.10.10', description: 'Ultra-fast Python package manager (replaces pip)' },
+      { name: 'FFmpeg', version: '8.0.1', description: 'Media processing toolkit for audio/video pipelines' },
+      { name: 'jq', version: '1.8.1', description: 'Command-line JSON processor' },
+      { name: 'NSSM', version: '2.24-101', description: 'Non-Sucking Service Manager for Windows services' },
+      { name: 'Wget', version: '1.21.4', description: 'Command-line HTTP/FTP downloader' },
+      { name: 'Windows SDK', version: '10.1.26100', description: 'Windows platform development headers and libraries' },
+    ],
+  },
+  {
+    id: 'cloud', label: 'Containers & Cloud', icon: '☁', color: C.cyan10g,
+    items: [
+      { name: 'Docker Desktop', version: '4.64.0', description: 'Container runtime for dev and deployment' },
+      { name: 'cloudflared', version: '2025.8.1', description: 'Cloudflare Tunnel daemon for secure ingress' },
+    ],
+  },
+  {
+    id: 'db', label: 'Database', icon: '🗄', color: C.orange,
+    items: [
+      { name: 'PostgreSQL', version: '17.9-2', description: 'Primary relational database for local dev' },
+    ],
+  },
+  {
+    id: 'remote', label: 'Remote Access', icon: '🔗', color: C.teal,
+    items: [
+      { name: 'Tailscale', version: '1.94.2', description: 'WireGuard-based mesh VPN connecting all workstations' },
+      { name: 'Parsec', version: '150-101b', description: 'Low-latency remote desktop for GPU workloads' },
+      { name: 'Sunshine', version: '2025.924', description: 'Open-source game streaming server (Moonlight host)' },
+      { name: 'Moonlight', version: '6.1.0', description: 'GameStream client for remote desktop access' },
+      { name: 'Barrier', version: '2.4.0', description: 'Software KVM — share keyboard/mouse across machines' },
+      { name: 'WireGuard', version: '0.5.3', description: 'VPN tunnel for colo and external access' },
+    ],
+  },
+  {
+    id: 'monitor', label: 'Monitoring', icon: '📊', color: C.warning,
+    items: [
+      { name: 'windows_exporter', version: '0.31.3', description: 'Prometheus metrics exporter for Windows host stats' },
+    ],
+  },
+  {
+    id: 'prod', label: 'Productivity', icon: '📦', color: C.textDim,
+    items: [
+      { name: 'Adobe Acrobat', version: '25.001', description: 'PDF creation and document management' },
+      { name: 'Microsoft 365', version: '16.0.19725', description: 'Office suite — Word, Excel, Outlook, Teams' },
+      { name: 'PowerToys', version: '0.97.2', description: 'Windows power-user utilities (FancyZones, etc.)' },
+      { name: '7-Zip', version: '26.00', description: 'Archive compression and extraction utility' },
+      { name: 'Google Chrome', version: '146.0', description: 'Primary web browser' },
+    ],
+  },
+]
+
 /* ── Workstation Software Inventory ─────────────────────── */
 
 export const WORKSTATIONS_SOFTWARE: WorkstationSoftware[] = [
@@ -49,69 +125,7 @@ export const WORKSTATIONS_SOFTWARE: WorkstationSoftware[] = [
     color: C.green100g,
     gpu: 'RTX 5090 32GB',
     ram: '64 GB',
-    categories: [
-      {
-        id: 'ai', label: 'AI / ML', icon: '🧠', color: C.purple,
-        items: [
-          { name: 'Ollama', version: '0.18.0', description: 'Local LLM inference server — hosts 21 models for the fleet' },
-          { name: 'AnythingLLM', version: '1.10.0', description: 'Local RAG desktop app with document embedding' },
-          { name: 'NVIDIA CUDA Toolkit', version: '13.2', description: 'GPU compute platform for ML workloads' },
-          { name: 'NVIDIA AI Container', version: '1.44', description: 'Pre-built container runtime for NVIDIA AI tools' },
-        ],
-      },
-      {
-        id: 'dev', label: 'Development', icon: '⌨', color: C.accent,
-        items: [
-          { name: 'Node.js', version: '24.14.0', description: 'JavaScript runtime for server-side apps and tooling' },
-          { name: 'Python', version: '3.14.3', description: 'Primary scripting language for automation and ML' },
-          { name: 'GitHub CLI', version: '2.88.1', description: 'Command-line interface for GitHub operations' },
-          { name: 'Git LFS', version: '3.6.1', description: 'Large file storage extension for Git repos' },
-          { name: 'FFmpeg', version: '8.0.1', description: 'Media processing toolkit for audio/video pipelines' },
-          { name: 'Rustup', version: '1.28.2', description: 'Rust toolchain installer and version manager' },
-          { name: 'uv', version: '0.10.10', description: 'Ultra-fast Python package manager (replaces pip)' },
-        ],
-      },
-      {
-        id: 'cloud', label: 'Containers & Cloud', icon: '☁', color: C.cyan10g,
-        items: [
-          { name: 'Docker Desktop', version: '4.64.0', description: 'Container runtime for dev and deployment' },
-          { name: 'cloudflared', version: '2025.8.1', description: 'Cloudflare Tunnel daemon for secure ingress' },
-        ],
-      },
-      {
-        id: 'db', label: 'Database', icon: '🗄', color: C.orange,
-        items: [
-          { name: 'PostgreSQL', version: '17.9-2', description: 'Primary relational database for local dev' },
-        ],
-      },
-      {
-        id: 'remote', label: 'Remote Access', icon: '🔗', color: C.teal,
-        items: [
-          { name: 'Tailscale', version: '1.94.2', description: 'WireGuard-based mesh VPN connecting all workstations' },
-          { name: 'Parsec', version: '150-101b', description: 'Low-latency remote desktop for GPU workloads' },
-          { name: 'Sunshine', version: '2025.924', description: 'Open-source game streaming server (Moonlight host)' },
-          { name: 'Moonlight', version: '6.1.0', description: 'GameStream client for remote desktop access' },
-          { name: 'Barrier', version: '2.4.0', description: 'Software KVM — share keyboard/mouse across machines' },
-          { name: 'WireGuard', version: '0.5.3', description: 'VPN tunnel for colo and external access' },
-        ],
-      },
-      {
-        id: 'monitor', label: 'Monitoring', icon: '📊', color: C.warning,
-        items: [
-          { name: 'windows_exporter', version: '0.29.2', description: 'Prometheus metrics exporter for Windows host stats' },
-        ],
-      },
-      {
-        id: 'prod', label: 'Productivity', icon: '📦', color: C.textDim,
-        items: [
-          { name: 'Adobe Photoshop 2026', version: '27.4.0', description: 'Image editing for design assets and marketing' },
-          { name: 'Adobe Acrobat', version: '25.001', description: 'PDF creation and document management' },
-          { name: 'Microsoft 365', version: '16.0.19725', description: 'Office suite — Word, Excel, Outlook, Teams' },
-          { name: '7-Zip', version: '26.00', description: 'Archive compression and extraction utility' },
-          { name: 'Google Chrome', version: '145.0', description: 'Primary web browser' },
-        ],
-      },
-    ],
+    categories: UNIFIED_CATEGORIES,
   },
   {
     id: 'iron-patriot',
@@ -120,71 +134,7 @@ export const WORKSTATIONS_SOFTWARE: WorkstationSoftware[] = [
     color: C.purple,
     gpu: 'RTX PRO 6000 96GB',
     ram: '128 GB',
-    categories: [
-      {
-        id: 'ai', label: 'AI / ML', icon: '🧠', color: C.purple,
-        items: [
-          { name: 'Ollama', version: '0.18.0', description: 'Local LLM inference — secondary node for fleet' },
-          { name: 'NVIDIA CUDA Toolkit', version: '12.9 + 13.2', description: 'Dual CUDA versions for broad model compatibility' },
-          { name: 'NVIDIA Nsight Compute', version: '2026.1.0', description: 'GPU kernel profiling and optimization tool' },
-          { name: 'NVIDIA Nsight Systems', version: '2025.1.3', description: 'System-wide performance analysis for GPU workloads' },
-        ],
-      },
-      {
-        id: 'dev', label: 'Development', icon: '⌨', color: C.accent,
-        items: [
-          { name: 'VS Code', version: '1.109.5', description: 'Lightweight code editor for quick edits and debugging' },
-          { name: 'Cursor', version: '2.6.19', description: 'AI-powered code editor (Claude/GPT integrated)' },
-          { name: 'Claude Desktop', version: 'latest', description: 'Anthropic Claude desktop client with MCP support' },
-          { name: 'Visual Studio Build Tools', version: '17.14.27', description: 'C/C++ compiler toolchain for native extensions' },
-          { name: 'Node.js', version: '24.14.0', description: 'JavaScript runtime for server-side apps and tooling' },
-          { name: 'Python', version: '3.12.10', description: 'Scripting language for automation and ML' },
-          { name: 'PowerShell 7', version: '7.5.5', description: 'Cross-platform shell and scripting framework' },
-          { name: 'GitHub CLI', version: '2.88.1', description: 'Command-line interface for GitHub operations' },
-          { name: 'Rustup', version: '1.28.2', description: 'Rust toolchain installer and version manager' },
-          { name: 'FFmpeg', version: '8.0.1', description: 'Media processing toolkit' },
-          { name: 'jq', version: '1.8.1', description: 'Command-line JSON processor' },
-          { name: 'NSSM', version: '2.24-101', description: 'Non-Sucking Service Manager for Windows services' },
-          { name: 'Wget', version: '1.21.4', description: 'Command-line HTTP/FTP downloader' },
-          { name: 'Windows SDK', version: '10.1.26100', description: 'Windows platform development headers and libraries' },
-        ],
-      },
-      {
-        id: 'cloud', label: 'Containers & Cloud', icon: '☁', color: C.cyan10g,
-        items: [
-          { name: 'Docker Desktop', version: '4.64.0', description: 'Container runtime — hosts JARVIS services' },
-          { name: 'cloudflared', version: '2025.8.1', description: 'Cloudflare Tunnel daemon for secure ingress' },
-        ],
-      },
-      {
-        id: 'db', label: 'Database', icon: '🗄', color: C.orange,
-        items: [
-          { name: 'PostgreSQL', version: '17.9-2', description: 'Relational database — JARVIS-RAG backend' },
-        ],
-      },
-      {
-        id: 'remote', label: 'Remote Access', icon: '🔗', color: C.teal,
-        items: [
-          { name: 'Tailscale', version: '1.94.2', description: 'WireGuard-based mesh VPN' },
-          { name: 'Parsec', version: '150-101b', description: 'Low-latency remote desktop' },
-          { name: 'Sunshine', version: '2025.924', description: 'Game streaming server (Moonlight host)' },
-          { name: 'Moonlight', version: '6.1.0', description: 'GameStream client for remote access' },
-        ],
-      },
-      {
-        id: 'monitor', label: 'Monitoring', icon: '📊', color: C.warning,
-        items: [
-          { name: 'windows_exporter', version: '0.29.2', description: 'Prometheus metrics exporter for Windows' },
-        ],
-      },
-      {
-        id: 'prod', label: 'Productivity', icon: '📦', color: C.textDim,
-        items: [
-          { name: '7-Zip', version: '26.00', description: 'Archive compression utility' },
-          { name: 'Google Chrome', version: '145.0', description: 'Primary web browser' },
-        ],
-      },
-    ],
+    categories: UNIFIED_CATEGORIES,
   },
   {
     id: 'jericho',
@@ -193,49 +143,7 @@ export const WORKSTATIONS_SOFTWARE: WorkstationSoftware[] = [
     color: C.accent,
     gpu: 'RTX PRO 6000 96GB',
     ram: '128 GB',
-    categories: [
-      {
-        id: 'ai', label: 'AI / ML', icon: '🧠', color: C.purple,
-        items: [
-          { name: 'NVIDIA CUDA Toolkit', version: '13.2', description: 'GPU compute platform for ML workloads' },
-          { name: 'NVIDIA Nsight Compute', version: '2026.1.0', description: 'GPU kernel profiling tool' },
-          { name: 'NVIDIA Nsight Systems', version: '2025.6.3', description: 'System-wide GPU performance analysis' },
-        ],
-      },
-      {
-        id: 'dev', label: 'Development', icon: '⌨', color: C.accent,
-        items: [
-          { name: 'Visual Studio Build Tools', version: '17.14.28', description: 'C/C++ compiler toolchain' },
-          { name: '.NET SDK', version: '9.0.312', description: 'Full .NET development kit' },
-          { name: 'Node.js', version: '24.14.0', description: 'JavaScript runtime' },
-          { name: 'Python', version: '3.14.3', description: 'Primary scripting language' },
-          { name: 'PowerShell 7', version: '7.5.5', description: 'Cross-platform shell' },
-          { name: 'GitHub CLI', version: '2.88.1', description: 'GitHub command-line interface' },
-        ],
-      },
-      {
-        id: 'cloud', label: 'Containers & Cloud', icon: '☁', color: C.cyan10g,
-        items: [
-          { name: 'Docker Desktop', version: '4.64.0', description: 'Container runtime for dev environments' },
-        ],
-      },
-      {
-        id: 'remote', label: 'Remote Access', icon: '🔗', color: C.teal,
-        items: [
-          { name: 'Tailscale', version: '1.94.2', description: 'WireGuard-based mesh VPN' },
-          { name: 'Parsec', version: '150-101b', description: 'Low-latency remote desktop' },
-          { name: 'Sunshine', version: '2025.924', description: 'Game streaming server' },
-          { name: 'Moonlight', version: '6.1.0', description: 'GameStream client' },
-        ],
-      },
-      {
-        id: 'prod', label: 'Productivity', icon: '📦', color: C.textDim,
-        items: [
-          { name: '7-Zip', version: '26.00', description: 'Archive compression utility' },
-          { name: 'Google Chrome', version: '145.0', description: 'Primary web browser' },
-        ],
-      },
-    ],
+    categories: UNIFIED_CATEGORIES,
   },
   {
     id: 'ironman',
@@ -244,58 +152,7 @@ export const WORKSTATIONS_SOFTWARE: WorkstationSoftware[] = [
     color: C.warning,
     gpu: 'RTX PRO 6000 96GB',
     ram: '256 GB',
-    categories: [
-      {
-        id: 'ai', label: 'AI / ML', icon: '🧠', color: C.purple,
-        items: [
-          { name: 'NVIDIA CUDA Toolkit', version: '13.2', description: 'GPU compute platform for ML workloads' },
-          { name: 'NVIDIA Nsight Compute', version: '2026.1.0', description: 'GPU kernel profiling tool' },
-          { name: 'NVIDIA Nsight Systems', version: '2025.6.3', description: 'System-wide GPU performance analysis' },
-        ],
-      },
-      {
-        id: 'dev', label: 'Development', icon: '⌨', color: C.accent,
-        items: [
-          { name: '.NET SDK', version: '9.0.312', description: 'Full .NET development kit' },
-          { name: 'Node.js', version: '24.14.0', description: 'JavaScript runtime' },
-          { name: 'Python', version: '3.13.12', description: 'Primary scripting language' },
-          { name: 'PowerShell 7', version: '7.5.5', description: 'Cross-platform shell' },
-          { name: 'GitHub CLI', version: '2.88.1', description: 'GitHub command-line interface' },
-        ],
-      },
-      {
-        id: 'cloud', label: 'Containers & Cloud', icon: '☁', color: C.cyan10g,
-        items: [
-          { name: 'Docker Desktop', version: '4.64.0', description: 'Container runtime' },
-          { name: 'cloudflared', version: '2025.8.1', description: 'Cloudflare Tunnel daemon' },
-        ],
-      },
-      {
-        id: 'remote', label: 'Remote Access', icon: '🔗', color: C.teal,
-        items: [
-          { name: 'Tailscale', version: '1.94.2', description: 'WireGuard-based mesh VPN' },
-          { name: 'Parsec', version: '150-101b', description: 'Low-latency remote desktop' },
-          { name: 'Sunshine', version: '2025.924', description: 'Game streaming server' },
-          { name: 'Moonlight', version: '6.1.0', description: 'GameStream client' },
-        ],
-      },
-      {
-        id: 'monitor', label: 'Monitoring', icon: '📊', color: C.warning,
-        items: [
-          { name: 'windows_exporter', version: '0.31.3', description: 'Prometheus metrics exporter for Windows' },
-        ],
-      },
-      {
-        id: 'prod', label: 'Productivity', icon: '📦', color: C.textDim,
-        items: [
-          { name: 'Adobe Acrobat', version: '25.001', description: 'PDF creation and management' },
-          { name: 'Microsoft 365', version: '16.0.19725', description: 'Office suite' },
-          { name: 'PowerToys', version: '0.97.2', description: 'Windows power-user utilities (FancyZones, etc.)' },
-          { name: '7-Zip', version: '26.00', description: 'Archive compression utility' },
-          { name: 'Google Chrome', version: '146.0', description: 'Primary web browser' },
-        ],
-      },
-    ],
+    categories: UNIFIED_CATEGORIES,
   },
   {
     id: 'happy',
@@ -304,45 +161,7 @@ export const WORKSTATIONS_SOFTWARE: WorkstationSoftware[] = [
     color: C.pink,
     gpu: '—',
     ram: '32 GB',
-    categories: [
-      {
-        id: 'dev', label: 'Development', icon: '⌨', color: C.accent,
-        items: [
-          { name: 'Node.js', version: '24.14.0', description: 'JavaScript runtime for test suites' },
-          { name: 'Python', version: '3.12.10', description: 'Scripting for test automation' },
-          { name: 'GitHub CLI', version: '2.87.3', description: 'GitHub command-line interface' },
-        ],
-      },
-      {
-        id: 'cloud', label: 'Containers & Cloud', icon: '☁', color: C.cyan10g,
-        items: [
-          { name: 'Docker Desktop', version: '4.63.0', description: 'Container runtime for test environments' },
-        ],
-      },
-      {
-        id: 'remote', label: 'Remote Access', icon: '🔗', color: C.teal,
-        items: [
-          { name: 'Tailscale', version: '1.94.2', description: 'WireGuard-based mesh VPN' },
-          { name: 'Parsec', version: '150-101b', description: 'Low-latency remote desktop' },
-          { name: 'Sunshine', version: '2025.924', description: 'Game streaming server' },
-          { name: 'Moonlight', version: '6.1.0', description: 'GameStream client' },
-        ],
-      },
-      {
-        id: 'monitor', label: 'Monitoring', icon: '📊', color: C.warning,
-        items: [
-          { name: 'windows_exporter', version: '0.29.2', description: 'Prometheus metrics exporter for Windows' },
-        ],
-      },
-      {
-        id: 'prod', label: 'Productivity', icon: '📦', color: C.textDim,
-        items: [
-          { name: 'Adobe Acrobat', version: '25.001', description: 'PDF creation and management' },
-          { name: 'Microsoft 365', version: '16.0.19725', description: 'Office suite' },
-          { name: 'Google Chrome', version: '145.0', description: 'Primary web browser' },
-        ],
-      },
-    ],
+    categories: UNIFIED_CATEGORIES,
   },
 ]
 

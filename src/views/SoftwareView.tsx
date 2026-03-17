@@ -205,8 +205,9 @@ function FleetMatrix() {
   const coreTools = [
     'Docker', 'Tailscale', 'Parsec', 'Sunshine', 'Moonlight',
     'Node.js', 'Python', 'GitHub CLI', 'Chrome', 'windows_exporter',
-    'CUDA Toolkit', 'Ollama', 'PostgreSQL', 'cloudflared', 'PowerShell 7',
-    'VS Build Tools', 'Barrier', 'WireGuard', 'Cursor', 'Claude Desktop',
+    'CUDA Toolkit', 'Ollama', 'PostgreSQL', 'cloudflared', 'PowerShell',
+    'VS Code', 'Visual Studio Build Tools', 'Barrier', 'WireGuard', 'Cursor', 'Claude Desktop',
+    '.NET SDK', 'Rustup', 'uv', 'FFmpeg', 'jq', 'NSSM', 'Wget', 'Git LFS',
   ]
 
   const machines = WORKSTATIONS_SOFTWARE
