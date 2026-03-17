@@ -7,10 +7,11 @@ import { TestingView } from './views/TestingView'
 import { MemoryView } from './views/MemoryView'
 import { RagView } from './views/RagView'
 import { LLMModelsView } from './views/LLMModelsView'
+import { SoftwareView } from './views/SoftwareView'
 
 import { FooterStats } from './components/FooterStats'
 
-type Tab = 'physical' | 'logical' | 'power' | 'pipeline' | 'testing' | 'memory' | 'rag' | 'llm-models'
+type Tab = 'physical' | 'logical' | 'power' | 'pipeline' | 'testing' | 'memory' | 'rag' | 'llm-models' | 'software'
 
 const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: 'physical', label: 'Physical', icon: '⬡' },
@@ -21,6 +22,7 @@ const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: 'memory', label: 'Memory', icon: '◉' },
   { id: 'rag', label: 'RAG', icon: '◎' },
   { id: 'llm-models', label: 'LLM Models', icon: '🧠' },
+  { id: 'software', label: 'Software & Tools', icon: '🔧' },
 ]
 
 export default function App() {
@@ -68,6 +70,7 @@ export default function App() {
           {activeTab === 'memory' && <MemoryView />}
           {activeTab === 'rag' && <RagView />}
           {activeTab === 'llm-models' && <LLMModelsView />}
+          {activeTab === 'software' && <SoftwareView />}
         </div>
       </main>
 
