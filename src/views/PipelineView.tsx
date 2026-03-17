@@ -53,6 +53,8 @@ const nodeColors = {
   memory:   { bg: 'rgba(45,212,191,0.12)', border: 'rgba(45,212,191,0.35)', title: '#5eead4' },
   discord:  { bg: 'rgba(129,140,248,0.12)',border: 'rgba(129,140,248,0.35)',title: '#a5b4fc' },
   muted:    { bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0.3)', title: '#94a3b8' },
+  cicd:     { bg: 'rgba(244,63,94,0.12)', border: 'rgba(244,63,94,0.35)', title: '#fb7185' },
+  autofix:  { bg: 'rgba(251,146,60,0.15)',border: 'rgba(251,146,60,0.4)', title: '#fdba74' },
 }
 
 function Arrow() {
@@ -119,9 +121,10 @@ const legendItems = [
   { color: '#34d399', label: 'QUBO Engine' },
   { color: '#f87171', label: 'Dispatch / Workers' },
   { color: '#f472b6', label: 'Testing' },
-  { color: '#fb923c', label: 'Feedback Loop' },
+  { color: '#fb923c', label: 'Feedback / Autofix' },
   { color: '#a78bfa', label: 'Self-Healing' },
   { color: '#2dd4bf', label: 'Memory Layer' },
+  { color: '#f43f5e', label: 'CI/CD Pipeline' },
 ]
 
 /* ── Main Component ──────────────────────────────────────── */
@@ -138,7 +141,7 @@ export function PipelineView() {
           {' Pipeline'}
         </h2>
         <p className="text-xs mt-1" style={{ color: C.textDim }}>
-          Autonomous SDLC: PRD Generation &rarr; QUBO Optimization &rarr; Multi-Agent Execution &rarr; Self-Healing
+          Autonomous SDLC: PRD Generation &rarr; QUBO Optimization &rarr; Multi-Agent Execution &rarr; Autofix Loop &rarr; Self-Healing &rarr; CI/CD
         </p>
       </div>
 
@@ -286,10 +289,10 @@ export function PipelineView() {
       <Arrow />
 
       {/* ── PHASE 8 ─────────────────────────────────────── */}
-      <Phase label="Phase 8 — Test Feedback Loop" color={C.orange}>
+      <Phase label="Phase 8 — Test Feedback + Autonomous Fix Loop (IP-007)" color={C.orange}>
         <div className="text-center mb-3">
           <div className="inline-block">
-            <WideNode icon="📈" title="test_feedback.py" detail="Processes E2E test results. 4 outcome paths determine next action. Dual idempotency (metadata timestamp + Supabase query)." variant="feedback" />
+            <WideNode icon="📈" title="test_feedback.py" detail="Processes E2E test results. 4 outcome paths. Autofix agent generates patches on failure. Dual idempotency." variant="feedback" />
           </div>
         </div>
 
@@ -297,40 +300,67 @@ export function PipelineView() {
           <BranchColumn label="PASS" color={C.green100g}>
             <Node icon="✅" title="Mark COMPLETED" detail="Task done. Status → COMPLETED. SyncBack to KaychaExec." variant="qubo" />
           </BranchColumn>
-          <BranchColumn label="FAIL" color={C.red}>
-            <Node icon="🔄" title="Rework Loop" detail="Status → TODO. rework_iteration++. Max 3 iterations before escalation." variant="feedback" />
-            <Badge color={C.warning}>🔁 Max 3 iterations</Badge>
+          <BranchColumn label="FAIL → AUTOFIX" color={C.red}>
+            <Node icon="🔧" title="AutofixAgent" detail="Classifies failure (import/type/logic/timeout/syntax). Generates fix via qwen3.5:35b → Claude fallback." file="autofix_agent.py" variant="autofix" />
+            <div className="flex flex-col items-center">
+              <div className="w-0.5 h-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
+              <div className="w-0 h-0" style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '6px solid rgba(255,255,255,0.2)' }} />
+            </div>
+            <Node icon="📝" title="Commit to Branch" detail="autofix/<task>-iter<N>. Max 800 LOC patch. File denylist enforced." file="git push autofix/*" variant="autofix" />
+            <div className="flex flex-col items-center">
+              <div className="w-0.5 h-3" style={{ background: 'rgba(255,255,255,0.15)' }} />
+              <div className="w-0 h-0" style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '6px solid rgba(255,255,255,0.2)' }} />
+            </div>
+            <Node icon="🧪" title="Re-test on Happy" detail="TestOrchestrator dispatches targeted re-test. Loop: fix→test→fix up to 3 iterations." file="test_orchestrator.py" variant="test" />
+            <Badge color={C.warning}>🔁 Max 3 autofix iterations</Badge>
           </BranchColumn>
           <BranchColumn label="INFRA FAIL" color={C.warning}>
-            <Node icon="⚠️" title="Retry (No Count)" detail="Infrastructure failure (network, timeout). Retry without incrementing iteration counter." variant="feedback" />
+            <Node icon="⚠️" title="Retry (No Count)" detail="Infrastructure failure (network, timeout). Max 5 infra retries before BLOCKED." variant="feedback" />
           </BranchColumn>
-          <BranchColumn label="MAX ITERATIONS" color={C.purple}>
-            <Node icon="🚨" title="Escalate → BLOCKED" detail="3 rework failures. Status → BLOCKED. Discord alert for human review." variant="heal" />
+          <BranchColumn label="ESCALATE" color={C.purple}>
+            <Node icon="🚨" title="BLOCKED → Human" detail="Autofix exhausted or non-auto-fixable (OOM, resource). Discord critical alert." variant="heal" />
           </BranchColumn>
         </div>
 
-        <div className="mt-2">
-          <Sub>Rework loop feeds back to QUBO cycle — task re-enters optimization with updated metadata on next 5-min tick</Sub>
+        <div className="mt-2 space-y-0.5">
+          <Sub highlight={C.orange}>
+            <strong style={{ color: '#fdba74' }}>Autonomous Fix Loop:</strong>
+            {' test failure → classify → LLM generates patch → commit to branch → re-test on Happy → iterate until clean or escalate'}
+          </Sub>
+          <Sub><strong>Guardrails:</strong> 3 iteration cap · 800 LOC max patch · file denylist (migrations, .env, CI, secrets) · 500K daily token budget · AUTOFIX_ENABLED kill-switch</Sub>
         </div>
       </Phase>
 
       <Arrow />
 
       {/* ── PHASE 9 ─────────────────────────────────────── */}
-      <Phase label="Phase 9 — Self-Healing Architecture" color={C.purple}>
+      <Phase label="Phase 9 — Self-Healing Architecture (Multi-Tier)" color={C.purple}>
+        {/* Tier 1: Retry → CB → DLQ */}
+        <Sub><strong style={{ color: '#c4b5fd' }}>Tier 1 — Transient Fault Tolerance</strong></Sub>
         <div className="flex items-center justify-center gap-2 flex-wrap mb-3">
-          <Node icon="🔁" title="Retry with Backoff" detail="First line of defense. Exponential backoff on transient failures." variant="heal" />
+          <Node icon="🔁" title="Retry with Backoff" detail="Exponential backoff + jitter. base=1s, max=30s. Prevents thundering herd." variant="heal" />
           <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>on exhaust →</span>
           <Node icon="⚡" title="Circuit Breaker" detail="3-state: CLOSED → OPEN → HALF_OPEN. Threshold: 3 failures. Cooldown: 60s." file="circuit_breaker.py" variant="heal" />
           <span className="text-xs" style={{ color: 'rgba(255,255,255,0.15)' }}>on exhaust →</span>
           <Node icon="📦" title="Dead Letter Queue" detail="In-memory deque (maxlen=100). Drain-and-stage flush at cycle end. 72h TTL sweep." file="dead_letter.py" variant="heal" />
         </div>
 
-        <div className="flex justify-center gap-3 flex-wrap">
+        {/* Tier 2: Component health */}
+        <Sub><strong style={{ color: '#c4b5fd' }}>Tier 2 — Component Health Monitoring</strong></Sub>
+        <div className="flex justify-center gap-3 flex-wrap mb-3">
           <Node icon="👁️" title="Watchdog Monitor" detail="6-component health: exec_supabase, ops_supabase, bridge, discord, ollama, HAPPY. 30s interval." file="watchdog.py" variant="heal" />
-          <Node icon="📊" title="QUBO Metrics" detail="Per-cycle structured metrics: decisions made, dispatch count, solve time, energy values, stall count" file="qubo_metrics table" variant="heal" />
+          <Node icon="💓" title="Scheduler Heartbeat" detail="Writes JSON file + Supabase row every cycle. Dual-write: local (supervisor) + remote (monitoring)." file="scheduler_heartbeat table" variant="heal" />
+          <Node icon="🛫" title="Preflight Checks" detail="On startup: DB reachable, secrets present, DLQ < threshold. Fail-fast if not." file="scheduler.py" variant="heal" />
           <Node icon="🔒" title="PID File Lock" detail="Prevents dual execution (NSSM service vs child process). Stale PID reclaim on startup." file="qubo/.qubo.pid" variant="heal" />
-          <Node icon="🔥" title="Worker Heartbeat" detail="60s interval. last_heartbeat + worker_pid + worker_host. 30min staleness threshold for IN_PROGRESS reclaim." variant="heal" />
+        </div>
+
+        {/* Tier 3: Supervisor */}
+        <Sub><strong style={{ color: '#c4b5fd' }}>Tier 3 — Supervisor ("Who Watches the Watcher?")</strong></Sub>
+        <div className="flex justify-center gap-3 flex-wrap">
+          <WideNode icon="🏗️" title="WatchdogSupervisor" detail="Separate NSSM service. Checks scheduler heartbeat every 2min. If stale > 7min → NSSM restart. 3 consecutive failures → HARD STOP + critical Discord alert." file="watchdog_supervisor.py" variant="heal" />
+          <Node icon="📊" title="QUBO Metrics" detail="Per-cycle structured metrics: decisions, dispatch count, solve time, energy, stall streak." file="qubo_metrics table" variant="heal" />
+          <Node icon="🔥" title="Worker Heartbeat" detail="60s interval. Stale > 10min → mark as error. Auto-reclaimed by stale task recovery." variant="heal" />
+          <Node icon="💾" title="DLQ + Disk Alert" detail="Supervisor monitors DLQ length (alert > 20 entries) and disk space (alert < 1GB)." variant="heal" />
         </div>
       </Phase>
 
@@ -361,19 +391,58 @@ export function PipelineView() {
         </div>
       </Phase>
 
+      <Arrow />
+
+      {/* ── PHASE 11 ────────────────────────────────────── */}
+      <Phase label="Phase 11 — Post-Push CI/CD Pipeline (IP-007)" color="#f43f5e">
+        <Sub><strong style={{ color: '#fb7185' }}>Triggered:</strong> After CI passes on main (GitHub Actions workflow_run)</Sub>
+
+        {/* CI Stage */}
+        <div className="mt-2 mb-3">
+          <HFlow>
+            <Node icon="📤" title="git push → main" detail="Developer or autofix agent pushes code to main branch" variant="cicd" />
+            <HArrow />
+            <Node icon="🔨" title="CI Pipeline" detail="TypeScript lint + build, pnpm audit, pip-audit, pytest (160 tests)" file=".github/workflows/ci.yml" variant="cicd" />
+            <HArrow />
+            <Node icon="🚀" title="Fleet Deploy" detail="Self-hosted runner (sentinel). SSH to all machines, NSSM restart." file=".github/workflows/deploy.yml" variant="cicd" />
+          </HFlow>
+        </div>
+
+        <div className="flex justify-center items-center gap-4 py-1">
+          <Badge color="#f43f5e">After CI passes →</Badge>
+        </div>
+
+        {/* Index Workflow */}
+        <HFlow>
+          <Node icon="📖" title="docs:build" detail="Auto-regenerate API.md, CONFIG.md, SCHEMA.md, ARCHITECTURE.md from source" file="doc-generator.ts" variant="cicd" />
+          <HArrow />
+          <Node icon="🕸️" title="Graph Ingest" detail="Incremental import parsing. Updates code_nodes + code_edges in Supabase. Feeds QUBO dependency context." file="graph_ingest.py --incremental" variant="cicd" />
+          <HArrow />
+          <Node icon="🧪" title="Test Orchestrator" detail="Classifies changed files. Generates e2e_test tasks. Dispatches to Happy. Deduplicates pending tests." file="test_orchestrator.py --dispatch" variant="cicd" />
+        </HFlow>
+
+        <div className="mt-2 space-y-0.5">
+          <Sub highlight="#f43f5e">
+            <strong style={{ color: '#fb7185' }}>Index Workflow:</strong>
+            {' push → CI → deploy → docs regen → graph update → test dispatch → Happy runs tests → feedback loop → autofix if needed → iterate'}
+          </Sub>
+          <Sub><strong>Auto-commit:</strong> Regenerated docs committed with [skip ci] to prevent infinite loops. Graph ingest runs on self-hosted sentinel runner.</Sub>
+        </div>
+      </Phase>
+
       {/* ── Summary Stats ────────────────────────────────── */}
       <div className="flex justify-center gap-3 flex-wrap pt-4">
-        <StatCard value="10" label="Pipeline Phases" color={C.blue} />
-        <StatCard value="6" label="BQM Energy Terms" color={C.green100g} />
+        <StatCard value="11" label="Pipeline Phases" color={C.blue} />
+        <StatCard value="7" label="Intellectual Property" color={C.green100g} />
         <StatCard value="5" label="Action Types" color={C.red} />
-        <StatCard value="4" label="Worker Machines" color={C.warning} />
-        <StatCard value="7" label="RAG Collections" color={C.purple} />
-        <StatCard value="7" label="Memory Tables" color={C.teal} />
+        <StatCard value="5" label="Worker Machines" color={C.warning} />
+        <StatCard value="3" label="Self-Heal Tiers" color={C.purple} />
+        <StatCard value="0" label="Human Required" color={C.teal} />
       </div>
 
       {/* Footer */}
       <div className="text-center pt-6 pb-2 text-[11px]" style={{ color: '#475569' }}>
-        JARVIS-OPS Pipeline · Kaycha Labs · March 2026
+        JARVIS-OPS Autonomous SDLC Pipeline · Kaycha Labs · March 2026 · IP-001 through IP-007
       </div>
     </div>
   )
