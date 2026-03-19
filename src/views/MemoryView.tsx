@@ -53,6 +53,7 @@ const nodeColors = {
   cache:    { bg: 'rgba(167,139,250,0.12)',border: 'rgba(167,139,250,0.35)',title: '#c4b5fd' },
   embed:    { bg: 'rgba(129,140,248,0.12)',border: 'rgba(129,140,248,0.35)',title: '#a5b4fc' },
   muted:    { bg: 'rgba(100,116,139,0.1)', border: 'rgba(100,116,139,0.3)', title: '#94a3b8' },
+  sisyphus: { bg: 'rgba(236,72,153,0.12)', border: 'rgba(236,72,153,0.35)', title: '#f9a8d4' },
 }
 
 function Arrow() {
@@ -120,6 +121,7 @@ const legendItems = [
   { color: '#f87171', label: 'Entity Graph' },
   { color: '#fdba74', label: 'Feedback Loop' },
   { color: '#f472b6', label: 'Session Continuity' },
+  { color: '#ec4899', label: 'Sisyphus Integration' },
 ]
 
 /* ── Main View ───────────────────────────────────────────── */
@@ -133,7 +135,7 @@ export function MemoryView() {
           <h2 className="text-lg font-bold" style={{ color: C.textBright }}>JARVIS Memory System</h2>
           <p className="text-[11px] mt-1" style={{ color: C.textDim }}>
             QUBO-optimized persistent memory for Claude Code, Claude Desktop, and Cursor across all workstations.
-            6-phase evolution: write pipeline, domain intelligence, feedback loop, entity graph, session continuity, structured contradiction detection.
+            7-phase evolution: write pipeline, domain intelligence, feedback loop, entity graph, session continuity, contradiction detection, Sisyphus integration (HOBO + Bellman + surprise-driven recall).
           </p>
         </div>
         <div className="flex gap-1.5 flex-wrap">
@@ -145,9 +147,9 @@ export function MemoryView() {
 
       {/* Stats Bar */}
       <div className="flex gap-3 flex-wrap justify-center">
-        <StatCard value="10" label="MCP Tools" color={C.blue} />
-        <StatCard value="9" label="API Endpoints" color={C.green100g} />
-        <StatCard value="7" label="BQM Terms" color={C.teal} />
+        <StatCard value="12" label="MCP Tools" color={C.blue} />
+        <StatCard value="11" label="API Endpoints" color={C.green100g} />
+        <StatCard value="8" label="BQM Terms" color={C.teal} />
         <StatCard value="3" label="Domains" color={C.orange} />
         <StatCard value="768d" label="Embedding Dim" color={C.purple} />
         <StatCard value="<200ms" label="Write Latency" color={C.pink} />
@@ -190,6 +192,11 @@ export function MemoryView() {
             <HFlow>
               <Node icon="F" title="memory_feedback" detail="Log chunk utilization" file="Phase 3" variant="feedback" />
               <Node icon="H" title="memory_health" detail="Service health + all subsystem stats" variant="muted" />
+            </HFlow>
+            <div className="text-[11px] font-semibold mb-2 mt-3" style={{ color: '#f9a8d4' }}>Adaptive Recall (Phase 7 - Sisyphus)</div>
+            <HFlow>
+              <Node icon="!" title="memory_recall_interrupt" detail="Surprise-driven targeted recall when stuck" file="Phase 7" variant="sisyphus" />
+              <Node icon="B" title="memory_update_bitmask" detail="Report loaded chunks for delta-only recall" file="Phase 7" variant="sisyphus" />
             </HFlow>
           </div>
         </div>
@@ -271,18 +278,19 @@ export function MemoryView() {
           </HFlow>
 
           {/* BQM */}
-          <div className="text-[11px] font-semibold mt-3" style={{ color: '#6ee7b7' }}>3. BQM Construction (7-term energy function)</div>
+          <div className="text-[11px] font-semibold mt-3" style={{ color: '#6ee7b7' }}>3. BQM Construction (8-term energy function)</div>
           <div className="rounded-lg border p-4 font-mono text-[11px] leading-relaxed" style={{ background: 'rgba(52,211,153,0.05)', borderColor: 'rgba(52,211,153,0.15)', color: '#6ee7b7' }}>
             <div>H = <span style={{ color: '#fca5a5' }}>-alpha</span> SUM(rel_i * s_i)</div>
             <div className="ml-4">+ <span style={{ color: '#fcd34d' }}>beta</span> SUM(sim_ij * s_i * s_j)</div>
             <div className="ml-4">+ <span style={{ color: '#93c5fd' }}>gamma</span> (SUM(tok_i * s_i) - B)^2</div>
             <div className="ml-4">- <span style={{ color: '#5eead4' }}>delta</span> SUM(fresh_i * s_i)</div>
             <div className="ml-4">+ <span style={{ color: '#c4b5fd' }}>epsilon</span> per-source cap</div>
-            <div className="ml-4">- <span style={{ color: '#fdba74' }}>zeta</span> SUM(dep_pairs s_i * s_j)</div>
+            <div className="ml-4">- <span style={{ color: '#fdba74' }}>zeta</span> SUM(dep_pairs s_i * s_j) + Sisyphus bias boost</div>
             <div className="ml-4">+ <span style={{ color: '#f9a8d4' }}>eta</span> SUM(contradiction_ij * s_i * s_j)</div>
+            <div className="ml-4">- <span style={{ color: '#ec4899' }}>theta</span> SUM(v_i * s_i) + SUM(v_ij * s_i * s_j)  <span style={{ color: '#ec489980' }}>[Bellman]</span></div>
           </div>
           <div className="text-[10px] text-center" style={{ color: C.textDim }}>
-            Terms: relevance reward, redundancy penalty, token budget constraint, freshness bonus, source diversity, dependency coupling, contradiction penalty
+            Terms: relevance, redundancy, budget, freshness, source diversity, dependency coupling + Sisyphus biases, contradiction, Bellman value (learned future utility via TD(λ))
           </div>
 
           {/* Solver */}
@@ -376,6 +384,66 @@ export function MemoryView() {
 
       <Arrow />
 
+      {/* ── Phase 7: Sisyphus Integration ───────────────────── */}
+      <Phase label="Phase 7 - Sisyphus Integration (HOBO + Bellman + Adaptive Recall)" color="#ec4899">
+        <div className="text-[10px] text-center mb-3" style={{ color: C.textDim }}>
+          Sisyphus Engine provides continuous thermodynamic optimization of memory chunk relationships.
+          The engine runs a PID-controlled metabolism loop that verifies which chunk combinations are structurally load-bearing.
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <Node icon="S" title="Sisyphus MemoryWorld" detail="4 cognitive layers: Recall (degree-3), Sense, Desire, Affordance" file="sisyphus-engine" variant="sisyphus" />
+            <InfoBlock title="HOBO Polynomial" color="#ec4899" items={[
+              'BinaryPolynomial (degree 2+3) superposition',
+              'Dimensional Slicer: N-D poly → degree-≤2 BQM',
+              'make_quadratic() for surviving cubic terms',
+              'Pinned state propagation across cycles',
+            ]} />
+          </div>
+          <div className="space-y-2">
+            <Node icon="V" title="Bellman Value (Term 8)" detail="TD(λ) trainer: predicts future chunk utility" file="bellman_trainer.py" variant="sisyphus" />
+            <InfoBlock title="TD(λ) Learning" color="#ec4899" items={[
+              'v_i = learned linear value per chunk',
+              'v_ij = learned pair value (top-K=3 pruning)',
+              'Cold-start: bootstrap + 5-cycle eviction pin',
+              'Age decay: 0.98× per cycle after 200 idle',
+              'Trains every 100 interactions (offline)',
+            ]} />
+          </div>
+          <div className="space-y-2">
+            <Node icon="!" title="Surprise Detector" detail="3-signal trigger: D, rho, epsilon + anti-thrashing" file="surprise_detector.py" variant="sisyphus" />
+            <InfoBlock title="Adaptive Recall" color="#ec4899" items={[
+              'D(t): Sisyphus divergence (context mismatch)',
+              'rho(t): semantic distance from memory anchors',
+              'epsilon(t): confidence drop signal',
+              'Exponential backoff (1.5× per interrupt)',
+              'Incremental solve: delta-only, <100ms',
+              'Session bitmask: never re-fetch loaded chunks',
+            ]} />
+          </div>
+        </div>
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+          <InfoBlock title="Failure Hardening (7 mechanisms)" color="#ec4899" items={[
+            'Temporal validity gating (expired chunks excluded)',
+            'Cache incoherence detection (stale bias fallback)',
+            'Cold-start chunk protection (-999 pin bias)',
+            'PID anti-windup (I_max clamp + convergence flush)',
+            'Solver determinism audit (variance check, Tabu fallback)',
+            'Semantic drift detection (embedding model hash)',
+            'Prometheus metrics (7 gauges/counters)',
+          ]} />
+          <InfoBlock title="Supabase Tables (jarvis_memory)" color="#ec4899" items={[
+            'chunk_biases — Sisyphus-verified pairwise biases',
+            'bellman_values — TD(λ) learned v_i and v_ij',
+            'RPC: get_max_bias_seq(), get_chunk_biases()',
+            'Monotonic seq_id for staleness detection',
+            'BiasWriter: confidence 1.0 (verified) / 0.6 (failsafe)',
+          ]} />
+        </div>
+      </Phase>
+
+      <Arrow />
+
       {/* ── Infrastructure ─────────────────────────────────── */}
       <Phase label="Infrastructure" color="#94a3b8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -443,6 +511,9 @@ export function MemoryView() {
             'Entity graph enables structured queries',
             'Contradiction detection prevents conflicting context',
             'Session continuity tracks what was tried and failed',
+            'Sisyphus: predicts future needs via Bellman TD(λ)',
+            'Surprise detector: pushes context, agent never polls',
+            'Delta-only recall: never re-fetches loaded chunks',
           ]} />
         </div>
       </div>
