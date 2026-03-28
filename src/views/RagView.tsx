@@ -111,23 +111,23 @@ function CodeBlock({ children, color }: { children: React.ReactNode; color: stri
   )
 }
 
-/* ── Collection Status Data (live as of 2026-03-19) ──────── */
+/* ── Collection Status Data (live as of 2026-03-28) ──────── */
 
 const collections = [
   {
     name: 'jarvis_documents',
-    chunks: '195,098',
+    chunks: '175,820',
     chunkSize: '1024',
     overlap: '200',
-    bm25: 'SKIPPED',
+    bm25: 'OK',
     minScore: '0.25',
     status: 'ok' as const,
-    note: 'SOPs, HR policies, PowerDMS docs — BM25 disabled (exceeds 80K limit), vector-only',
+    note: 'SOPs, HR policies, PowerDMS docs — full hybrid search enabled (BM25_MAX_DOCS raised to 300K)',
     source: 'Supabase Storage bucket pm-documents (31K+ docs, PDF + DOCX)',
   },
   {
     name: 'jarvis_code',
-    chunks: '57,405',
+    chunks: '82,067',
     chunkSize: '768',
     overlap: '150',
     bm25: 'OK',
@@ -135,6 +135,17 @@ const collections = [
     status: 'ok' as const,
     note: 'Source code from 11+ active repos — language-aware chunking (Python/PHP/JS/TS/SQL)',
     source: 'GitHub repos via git clone --depth 1, files <100KB, skip node_modules/vendor/.git',
+  },
+  {
+    name: 'jarvis_knowledge',
+    chunks: '56,348',
+    chunkSize: '768',
+    overlap: '150',
+    bm25: 'OK',
+    minScore: '0.30',
+    status: 'ok' as const,
+    note: 'JARVIS KB + fleet harvest (all 5 machines) + Claude sessions + H: drive business docs + markdown harvest',
+    source: 'fleet_harvest.py (5 machines) + claude_sessions.py + h_drive.py (H:\\Business 49K files) + markdown_harvest.py',
   },
   {
     name: 'jarvis_legal',
@@ -146,17 +157,6 @@ const collections = [
     status: 'ok' as const,
     note: 'Contracts, NDAs, compliance agreements',
     source: 'Legal documents collection',
-  },
-  {
-    name: 'jarvis_knowledge',
-    chunks: '240',
-    chunkSize: '768',
-    overlap: '150',
-    bm25: 'OK',
-    minScore: '0.30',
-    status: 'ok' as const,
-    note: 'Architecture decisions, patterns, JARVIS KB entries, 49 help docs, domain knowledge',
-    source: 'data/raw/jarvis_kb.json + help_docs.json + hardcoded domain knowledge',
   },
   {
     name: 'jarvis_regulations',
@@ -188,7 +188,7 @@ const collections = [
     bm25: 'OK',
     minScore: '0.28',
     status: 'needs_reingest' as const,
-    note: 'Sales, AR aging, TAT metrics, corporate metrics — daily 3:30 AM ingest',
+    note: 'Sales, AR aging, TAT metrics, corporate metrics — daily 3:30 AM ingest (SUPABASE_SERVICE_KEY required)',
     source: 'KaychaExec Supabase: exec_sales_monthly_company, daily_sales, ar_aging, daily_tat, corporate_metrics',
   },
 ]
@@ -232,7 +232,7 @@ export function RagView() {
 
       {/* Stats Bar */}
       <div className="flex gap-3 flex-wrap justify-center">
-        <StatCard value="281K" label="Total Chunks" color={C.accent} />
+        <StatCard value="342K" label="Total Chunks" color={C.accent} />
         <StatCard value="7" label="Collections" color={C.teal} />
         <StatCard value="768d" label="Embed Dim" color={C.purple} />
         <StatCard value="Hybrid" label="Vec+BM25+HyDE" color={C.green100g} />
@@ -335,8 +335,8 @@ export function RagView() {
             <InfoBlock title="Config (config.py)" color="#a5b4fc" items={[
               'OLLAMA_BASE_URL: http://localhost:11434',
               'HYDE_MODEL: llama3.2:3b (set "" to disable)',
-              'BM25_MAX_DOCS: 80,000 per collection',
-              'MAX_CACHED_INDEXES: 2 (LRU eviction)',
+              'BM25_MAX_DOCS: 300,000 per collection (raised from 80K)',
+              'MAX_CACHED_INDEXES: 10 (LRU eviction)',
               'Embedding batch size: 64 chunks',
               'Embedding retry: 3 attempts, exponential backoff (2s, 4s, 8s)',
               'Max text per embedding: 3000 chars (8192 token limit)',
@@ -365,16 +365,16 @@ export function RagView() {
 
           {/* Stage 2: BM25 */}
           <div>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: '#fcd34d' }}>Stage 2 — BM25 Keyword Search (rank-bm25, 6 of 7 collections)</div>
+            <div className="text-[11px] font-semibold mb-2" style={{ color: '#fcd34d' }}>Stage 2 — BM25 Keyword Search (rank-bm25, all 7 collections)</div>
             <HFlow>
               <Node icon="T" title="Tokenize" detail="Lowercase, alphanumeric+underscore, min 2 chars" file="18 stopwords removed" variant="bm25" />
               <HArrow />
-              <Node icon="I" title="BM25 Index" detail="BM25Okapi, pickle-persisted" file="LRU cache, MAX_CACHED=2" variant="bm25" />
+              <Node icon="I" title="BM25 Index" detail="BM25Okapi, pickle-persisted" file="LRU cache, MAX_CACHED=10" variant="bm25" />
               <HArrow />
               <Node icon="R" title="BM25 Results" detail="Ranked by BM25 score (positive only)" file="~10-50ms" variant="bm25" />
             </HFlow>
             <div className="text-[10px] text-center mt-2" style={{ color: C.textDim }}>
-              <span style={{ color: '#f87171' }}>jarvis_documents (195K chunks)</span> skipped — exceeds BM25_MAX_DOCS=80K (would use ~640MB RAM).
+              <span style={{ color: '#34d399' }}>All 7 collections now covered</span> — BM25_MAX_DOCS raised to 300K (was 80K).
               Indexes persisted in data/bm25/*.pkl, rebuilt nightly 2:00 AM.
             </div>
           </div>
@@ -415,7 +415,7 @@ export function RagView() {
       <Arrow />
 
       {/* ── 7 Collections ─────────────────────────────────── */}
-      <Phase label="7 ChromaDB Collections — Live Status (March 19, 2026)" color="#2dd4bf">
+      <Phase label="7 ChromaDB Collections — Live Status (March 28, 2026)" color="#2dd4bf">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {collections.map((col) => (
             <div
@@ -469,19 +469,19 @@ export function RagView() {
           ))}
         </div>
         <div className="mt-3 text-[10px] text-center" style={{ color: C.textDim }}>
-          Total: <span style={{ color: C.textBright }}>281,112 chunks</span> across 7 collections.
+          Total: <span style={{ color: C.textBright }}>342,604 chunks</span> across 7 collections.
           Collection min_score thresholds tuned per collection in config.py.
-          jarvis_financial at 0 chunks — daily ingest scheduled 3:30 AM.
+          jarvis_financial at 0 chunks — daily ingest 3:30 AM (SUPABASE_SERVICE_KEY required).
         </div>
       </Phase>
 
       <Arrow />
 
       {/* ── 6 Data Extractors ────────────────────────────── */}
-      <Phase label="6 Data Extractors (Ingest Pipeline)" color="#f87171">
+      <Phase label="9 Data Extractors (Ingest Pipeline)" color="#f87171">
         <div className="space-y-4">
           <div className="text-[10px] text-center mb-2" style={{ color: C.textDim }}>
-            Orchestrated via run_pipeline.py — run all, or per-source: schemas, knowledge, code, docs, regulations, financial
+            Orchestrated via run_pipeline.py — run all, or per-source: schemas, knowledge, code, docs, regulations, financial. Fleet/sessions/h_drive via maintenance.py reingest.
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -529,6 +529,32 @@ export function RagView() {
               'Company lookup: finance_companies.company_name (NOT .name)',
               'AR aging buckets: current, 1-30d, 31-60d, 61-90d, 91+d',
               'Generated: monthly sales, entity trends, top 100 debtors',
+            ]} />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+            <InfoBlock title="7. fleet_harvest.py — Fleet-Wide Files" color="#f87171" items={[
+              'Syncs from all 5 machines via SSH/SCP nightly to ai-server then to IRON-PATRIOT',
+              'Machines: JERICHO, IRONMAN, SENTINEL, JERICHO-2, IRON-PATRIOT',
+              'File types: .py .ts .tsx .js .md .txt .json .yaml .toml .sh .bat .ps1',
+              'Landing path: data/markdown-harvest/{MACHINE}/**',
+              'Selective purge: deletes source=fleet_harvest before re-ingest',
+              'Scheduled: 12:30 AM daily via JarvisRAG-Fleet-Daily',
+            ]} />
+            <InfoBlock title="8. claude_sessions.py — Session Transcripts" color="#f87171" items={[
+              'Indexes Claude Code session JSONL transcripts from all 5 machines',
+              'Path: ~\/.claude/projects/**/*.jsonl harvested each night',
+              'Chunks: assistant messages only, semantic boundaries',
+              'Selective purge: source=claude_sessions before re-ingest',
+              'Purpose: recall patterns, debug history, cross-session context',
+              'Scheduled: alongside fleet_harvest at 12:30 AM daily',
+            ]} />
+            <InfoBlock title="9. h_drive.py — H: Business Docs" color="#f87171" items={[
+              'H:\Business mapped network share (was D: USB, migrated Mar 2026)',
+              '49,000 files / 38GB — PDF, DOCX, XLSX, CSV, TXT, MD',
+              'Multi-collection: routes to knowledge + documents + legal by folder',
+              'Selective purge: source=h_drive before re-ingest',
+              'Skip: node_modules, .git, venv, dist, build, temp, >50MB files',
+              'Scheduled: alongside fleet_harvest at 12:30 AM daily',
             ]} />
           </div>
 
@@ -586,14 +612,18 @@ export function RagView() {
               <Node icon="3A" title="Financial Daily" detail="3:30 AM daily" file="JarvisRAG-Financial-Daily" variant="schedule" />
               <Node icon="Su" title="Regulations Weekly" detail="3:00 AM Sundays" file="JarvisRAG-Regulations-Weekly" variant="schedule" />
             </HFlow>
+            <HFlow>
+              <Node icon="12A" title="Fleet Daily" detail="12:30 AM daily" file="JarvisRAG-Fleet-Daily" variant="schedule" />
+              <Node icon="4A" title="BiSync Nightly" detail="4:30 AM daily" file="JarvisRAG-BiSync-Nightly" variant="schedule" />
+            </HFlow>
           </div>
           <div className="space-y-3">
             <InfoBlock title="Task Wrappers" color="#fdba74" items={[
-              'tools/task-bm25.bat -> maintenance.py bm25',
-              'tools/task-financial.bat -> maintenance.py reingest financial',
-              'tools/task-regulations.bat -> maintenance.py reingest regulations',
-              'Logs: E:\\Projects\\jarvis-rag\\logs\\live-refresh-YYYY-MM-DD.log',
-              'Last clean run: completed in 26.7s',
+              'tools/task-bm25.bat → maintenance.py bm25',
+              'tools/task-financial.bat → maintenance.py reingest financial',
+              'tools/task-regulations.bat → maintenance.py reingest regulations',
+              'tools/task-fleet.bat → maintenance.py reingest fleet sessions h_drive',
+              'tools/task-bisync.bat → sync_bidirectional.py (venv python, fixed 2026-03-28)',
             ]} />
             <InfoBlock title="Performance Characteristics" color="#fdba74" items={[
               'Vector search: ~100-500ms (Ollama embed + ChromaDB)',
@@ -611,7 +641,7 @@ export function RagView() {
 
       {/* ── Infrastructure ────────────────────────────────── */}
       <Phase label="Infrastructure" color="#94a3b8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <InfoBlock title="IRON-PATRIOT (Primary Host)" color={C.teal} items={[
             ':8100 — jarvis-rag REST API (FastAPI/Uvicorn, NSSM)',
             ':8101 — jarvis-rag MCP SSE (Python proxy -> :8100)',
@@ -621,31 +651,73 @@ export function RagView() {
             'BM25 pickles: E:\\Projects\\jarvis-rag\\data\\bm25\\',
             'System Python: C:\\Python312 (not venv)',
           ]} />
-          <InfoBlock title="SENTINEL (Embedding + Replica)" color={C.blue} items={[
+          <InfoBlock title="SENTINEL (Embedding + OWU)" color={C.blue} items={[
             ':11434 — Ollama (nomic-embed-text 768d + llama3.2:3b HyDE)',
+            ':3000 — Open WebUI LLM proxy (all local + cloud models)',
             'Tailscale: 100.98.251.57 | LAN: 192.168.1.40',
             'RTX 5090 32GB, 64GB RAM',
             'Embedding batch: 64 per call, 3000 char max',
             'Fallback: progressive truncation (2000, 1000, 500 chars)',
-            'RAG replica: nightly sync + watchdog every 5min',
+          ]} />
+          <InfoBlock title="ai-server (Colo Replica)" color={C.coloGreen} items={[
+            'Dell R760xa @ Revelex Boca Raton colo',
+            '2× NVIDIA L40S 48GB | 512GB RAM',
+            'Public: 204.10.144.25:8100 (jarvis-rag Docker)',
+            'Tailscale: 100.78.92.45',
+            'Bidirectional sync with IRON-PATRIOT nightly 4:30 AM',
+            'sync_bidirectional.py: push+pull ChromaDB deltas',
           ]} />
           <InfoBlock title="Memory Budget" color={C.orange} items={[
             'ChromaDB: ~500MB-1GB (depending on collection sizes)',
-            'BM25 (2 cached): ~200-400MB per large collection',
+            'BM25 (10 cached, LRU): ~200-640MB per large collection',
             'Ollama embed model: ~1GB (nomic-embed-text)',
             'Cross-encoder: ~300MB (lazy-loaded on first rerank)',
-            'Total peak: ~2.5-3GB RAM for retrieval stack',
-            'Collections >80K docs: vector-only (BM25 disabled)',
+            'Total peak: ~3-4GB RAM (all 7 BM25 indexes + reranker)',
+            'BM25_MAX_DOCS=300K: all collections covered',
           ]} />
         </div>
       </Phase>
 
-      {/* ── Codebase Map ─────────────────────────────────── */}
+      <Arrow />
+
+      {/* ── LLM Proxy Layer ────────────────────────────────── */}
+      <Phase label="LLM Proxy Layer — SENTINEL:3000 (Open WebUI)" color="#a78bfa">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <InfoBlock title="Open WebUI" color={C.webPurple} items={[
+            'SENTINEL:3000 — unified LLM proxy + chat UI',
+            'Routes: local Ollama (qwen3.5:122b, llama3.2:3b, nomic-embed-text)',
+            'Routes: colo ai-server Ollama models via Tailscale',
+            'Routes: cloud APIs (OpenAI, Anthropic, Google, DeepSeek)',
+            'owu-mcp-server bridges Claude Code tools to OWU dispatch',
+            'Models: qwen3.5:122b-tuned (code), deepseek-r1 (debug), gemini (strategy)',
+          ]} />
+          <InfoBlock title="owu-mcp-server (E:\Projects\owu-mcp-server)" color={C.webPurple} items={[
+            'MCP tools: dispatch_task, dispatch_with_context, dispatch_conversation',
+            'list_models: enumerate all OWU-available models',
+            'Registered on all 5 workstations via .claude.json',
+            'Used for: Qwen code gen, DeepSeek debug, Gemini strategy',
+            'Consultant panel: o3, glm-5, deepseek-reasoner, gemini-2.5-pro',
+            'jarvis-deep route: qwen3.5:122b via OWU for heavy code tasks',
+          ]} />
+          <InfoBlock title="Model Routing (CLAUDE.md)" color={C.webPurple} items={[
+            'Code gen: Qwen 3.5 122b via ollama_generate_code MCP',
+            'Debug: deepseek-reasoner via consult_debug MCP',
+            'Architecture review: o3 via consult_architecture MCP',
+            'Strategy: gemini-2.5-pro via consult_strategy MCP',
+            'Code review: glm-5 via consult_code MCP',
+            'All models accessible via SENTINEL:3000 + owu-mcp-server',
+          ]} />
+        </div>
+      </Phase>
+
+            {/* ── Codebase Map ─────────────────────────────────── */}
       <Phase label="Codebase Map (E:\\Projects\\jarvis-rag)" color="#94a3b8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <InfoBlock title="Core Pipeline" color={C.blue} items={[
             'config.py — 27 configuration parameters',
-            'run_pipeline.py — 6 extractor orchestration',
+            'run_pipeline.py — 9 extractor orchestration',
+            'maintenance.py — BM25 rebuild, embed-check, reingest CLI',
+            'sync_bidirectional.py — IRON-PATRIOT ↔ ai-server sync',
             'pipeline/chunker.py — 4 chunking strategies + tiktoken',
             'pipeline/embedder.py — Ollama batch embed + retry',
             'pipeline/ingestor.py — ChromaDB upsert + BM25 trigger',
@@ -656,13 +728,16 @@ export function RagView() {
             'retrieval/bm25_index.py — BM25 persistence + LRU',
             'mcp_server.py — 3 MCP tools, SSE on :8101',
           ]} />
-          <InfoBlock title="6 Extractors" color={C.red} items={[
+          <InfoBlock title="9 Extractors" color={C.red} items={[
             'extractors/schemas.py — YourCOA + KaychaExec + Supabase',
             'extractors/knowledge_base.py — KB + help + domain knowledge',
             'extractors/github_code.py — Language-aware code chunking',
             'extractors/pdf_docs.py — PowerDMS PDF/DOCX extraction',
             'extractors/regulations.py — 10-state cannabis compliance',
             'extractors/financial.py — KaychaExec financial metrics',
+            'extractors/fleet_harvest.py — All 5 machines, all file types',
+            'extractors/claude_sessions.py — Claude Code session transcripts',
+            'extractors/h_drive.py — H:\Business 49K files/38GB',
           ]} />
         </div>
       </Phase>
@@ -713,7 +788,7 @@ export function RagView() {
           </div>
           <div>
             <span style={{ color: '#c4b5fd' }}>11. Return</span>
-            {' \u2192 context block injected into Claude prompt (grounded in 281K chunks)'}
+            {' \u2192 context block injected into Claude prompt (grounded in 342K chunks)'}
           </div>
         </div>
 
@@ -737,11 +812,11 @@ export function RagView() {
             'jarvis-memory bitmask: track loaded chunks for delta-only',
           ]} />
           <InfoBlock title="Known Limitations" color={C.orange} items={[
-            'jarvis_documents BM25 disabled (195K > 80K limit)',
-            'jarvis_financial at 0 chunks (daily ingest schedule)',
+            'jarvis_financial at 0 chunks (SUPABASE_SERVICE_KEY missing from env)',
             'HyDE adds 2-5s latency (disable with HYDE_MODEL="")',
             'Embedding calls to SENTINEL add network hop vs local',
             'Cross-encoder lazy-loaded (~300MB, first-request penalty)',
+            'BM25 build peak: ~2.4GB RAM for 300K-doc collections',
             'mcp-remote proxy adds 1 hop vs native MCP connection',
           ]} />
         </div>

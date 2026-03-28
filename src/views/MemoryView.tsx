@@ -157,7 +157,7 @@ export function MemoryView() {
         <StatCard value="3" label="Domains" color={C.orange} />
         <StatCard value="768d" label="Embedding Dim" color={C.purple} />
         <StatCard value="~2.5s" label="Full Pipeline" color={C.pink} />
-        <StatCard value="281K" label="RAG Chunks" color={C.accent} />
+        <StatCard value="342K" label="RAG Chunks" color={C.accent} />
       </div>
 
       {/* ── Phase 0: Client Layer ─────────────────────────── */}
@@ -295,7 +295,7 @@ export function MemoryView() {
           <HFlow>
             <Node icon="M" title="jarvis_memory" detail="CF Worker FTS - decisions, patterns" file="222-428ms latency" variant="store" />
             <HArrow />
-            <Node icon="R" title="jarvis_rag" detail="ChromaDB - 7 collections, 281K chunks" file="100-500ms latency" variant="store" />
+            <Node icon="R" title="jarvis_rag" detail="ChromaDB - 7 collections, 342K chunks" file="100-500ms latency" variant="store" />
             <HArrow />
             <Node icon="G" title="Entity Graph" detail="SQLite + NetworkX - N-hop expansion" file="92 nodes, 209 edges" variant="entity" />
           </HFlow>
@@ -557,7 +557,7 @@ export function MemoryView() {
           <div className="space-y-3">
             <div className="text-[11px] font-semibold" style={{ color: '#fdba74' }}>Live System Status (Audited)</div>
             <div className="grid grid-cols-2 gap-2">
-              <StatCard value="281K" label="Total Chunks" color="#34d399" />
+              <StatCard value="342K" label="Total Chunks" color="#34d399" />
               <StatCard value="7" label="RAG Collections" color="#2dd4bf" />
               <StatCard value="92" label="Code Graph Nodes" color="#a5b4fc" />
               <StatCard value="209" label="Code Graph Edges" color="#a5b4fc" />
@@ -588,7 +588,7 @@ export function MemoryView() {
                   ['Knowledge Extraction', 'CML-MIC', 'LLM-powered (8 types) vs regex (5 types)'],
                   ['Code Dependency', 'JARVIS', '92-node graph + BQM Term 6 vs not addressed'],
                   ['Workspace Tracking', 'JARVIS', 'Git hook + 4hr TTL + 1.3x boost vs not addressed'],
-                  ['Scale (live data)', 'JARVIS', '281K chunks operational vs theoretical'],
+                  ['Scale (live data)', 'JARVIS', '342K chunks operational vs theoretical'],
                   ['Multi-Machine', 'JARVIS', '5 workstations + Tailscale vs single Docker Compose'],
                 ].map(([dim, winner, why], i) => (
                   <tr key={i} style={{ background: i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent' }}>
