@@ -59,7 +59,7 @@ const UNIFIED_CATEGORIES: SoftwareCategory[] = [
   {
     id: 'ai', label: 'AI / ML', icon: '🧠', color: C.purple,
     items: [
-      { name: 'Ollama', version: '0.18.2', description: 'Local LLM inference server — hosts models for the fleet' },
+      { name: 'Ollama', version: '0.18.3', description: 'Local LLM inference server — hosts models for the fleet' },
       { name: 'NVIDIA CUDA Toolkit', version: '13.2', description: 'GPU compute platform for ML workloads' },
       { name: 'NVIDIA Nsight Compute', version: '2026.1.0', description: 'GPU kernel profiling and optimization tool' },
       { name: 'NVIDIA Nsight Systems', version: '2025.6.3', description: 'System-wide performance analysis for GPU workloads' },
@@ -75,8 +75,8 @@ const UNIFIED_CATEGORIES: SoftwareCategory[] = [
       { name: 'Claude Code', version: '2.1.79', description: 'Anthropic Claude CLI agent for multi-file agentic coding' },
       { name: 'Visual Studio Build Tools', version: '17.14.28', description: 'C/C++ compiler toolchain for native extensions' },
       { name: '.NET SDK', version: '9.0.312', description: 'Full .NET development kit' },
-      { name: 'Node.js', version: '24.14.0', description: 'JavaScript runtime for server-side apps and tooling' },
-      { name: 'pnpm', version: '10.32.1', description: 'Fast, disk-efficient package manager (default for Kaycha projects)' },
+      { name: 'Node.js', version: '24.14.1', description: 'JavaScript runtime for server-side apps and tooling' },
+      { name: 'pnpm', version: '10.33.0', description: 'Fast, disk-efficient package manager (default for Kaycha projects)' },
       { name: 'Python', version: '3.14.3', description: 'Primary scripting language for automation and ML' },
       { name: 'PowerShell 7', version: '7.5.5', description: 'Cross-platform shell and scripting framework' },
       { name: 'Git', version: '2.53.0', description: 'Distributed version control system' },
@@ -325,13 +325,13 @@ export const CHROME_EXTENSIONS: ChromeExtension[] = [
   { name: 'Read on reMarkable', id: 'bfhkfdnddlhfippjbflipboognpdpoeh', version: '1.2.6', machines: ['HAPPY'] },
 ]
 
-/* ── Version Drift (live scan 2026-03-23) ──────────────── */
+/* ── Version Drift (live scan 2026-03-29) ──────────────── */
 
 export const VERSION_DRIFT: VersionDrift[] = [
   { software: 'Ollama', category: 'ai_tool', versions: [
-    { hostname: 'SENTINEL', version: '0.18.2' }, { hostname: 'IRON-PATRIOT', version: '0.18.2' },
-    { hostname: 'JERICHO', version: '0.18.2' }, { hostname: 'IRONMAN', version: '0.18.2' },
-    { hostname: 'HAPPY', version: '0.17.6' },
+    { hostname: 'SENTINEL', version: '0.18.3' }, { hostname: 'IRON-PATRIOT', version: '0.18.3' },
+    { hostname: 'JERICHO', version: '0.18.3' }, { hostname: 'IRONMAN', version: '0.18.3' },
+    { hostname: 'HAPPY', version: '0.18.3' },
   ]},
   { software: 'NVIDIA Graphics Driver', category: 'driver', versions: [
     { hostname: 'SENTINEL', version: '595.79' }, { hostname: 'IRON-PATRIOT', version: '595.79' },
@@ -394,5 +394,5 @@ export const SOFTWARE_STATS = {
   totalWorkstations: WORKSTATIONS_SOFTWARE.length,
   totalChromeExtensions: CHROME_EXTENSIONS.length,
   totalVersionDrifts: VERSION_DRIFT.length,
-  auditDate: '2026-03-26',
+  auditDate: '2026-03-29',
 }
