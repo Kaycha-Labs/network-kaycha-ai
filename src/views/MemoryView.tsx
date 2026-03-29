@@ -155,7 +155,7 @@ export function MemoryView() {
         <StatCard value="8" label="API Endpoints" color={C.green100g} />
         <StatCard value="8" label="BQM Terms" color={C.teal} />
         <StatCard value="3" label="Domains" color={C.orange} />
-        <StatCard value="768d" label="Embedding Dim" color={C.purple} />
+        <StatCard value="1024d" label="Embedding Dim" color={C.purple} />
         <StatCard value="~2.5s" label="Full Pipeline" color={C.pink} />
         <StatCard value="342K" label="RAG Chunks" color={C.accent} />
       </div>
@@ -303,7 +303,7 @@ export function MemoryView() {
           {/* Scoring */}
           <div className="text-[11px] font-semibold mt-3" style={{ color: '#6ee7b7' }}>2. Scoring (vectorized, domain-weighted)</div>
           <HFlow>
-            <Node icon="E" title="Embeddings" detail="nomic-embed-text 768d via Ollama, batch=64" file="SENTINEL:11434" variant="embed" />
+            <Node icon="E" title="Embeddings" detail="snowflake-arctic-embed2 1024d via Ollama, batch=64" file="IRON-PATRIOT:11434" variant="embed" />
             <HArrow />
             <Node icon="P" title="Pairwise Similarity" detail="Vectorized matmul (normalized @ normalized.T)" variant="embed" />
             <HArrow />
@@ -616,7 +616,7 @@ export function MemoryView() {
             'HIGH: Full pipeline 0 candidates on some queries',
             'MEDIUM: CF Worker FTS returning 0 results (needs re-index)',
             'LOW: memory_write errors: 3 in dry_run mode',
-            'RESOLVED: Embedding model upgraded 384d -> 768d (nomic-embed-text)',
+            'RESOLVED: Embedding model upgraded 384d -> 768d -> 1024d (snowflake-arctic-embed2, 8192 ctx)',
           ]} />
         </div>
 
@@ -659,8 +659,8 @@ export function MemoryView() {
           ]} />
           <InfoBlock title="SENTINEL (Hot Backup)" color={C.blue} items={[
             ':7472 - Memory Optimizer (same code, synced data)',
-            'Ollama host for embeddings (nomic-embed-text 768d)',
-            'RTX 5090 32GB, 64GB RAM',
+            'qwen3.5:35b-a3b pinned, KEEP_ALIVE=-1 (25GB/32GB)',
+            'RTX 5090 32GB, 128GB RAM',
             'Data sync via SCP of SQLite files',
             'OWU :3000 with 199 model routes',
           ]} />

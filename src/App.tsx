@@ -8,12 +8,13 @@ import { MemoryView } from './views/MemoryView'
 import { RagView } from './views/RagView'
 import { LLMModelsView } from './views/LLMModelsView'
 import { SoftwareView } from './views/SoftwareView'
+import { GatewayView } from './views/GatewayView'
 import { LocationsView } from './views/LocationsView'
 import { BackupView } from './views/BackupView'
 
 import { FooterStats } from './components/FooterStats'
 
-type Tab = 'locations' | 'backup' | 'physical' | 'logical' | 'power' | 'pipeline' | 'testing' | 'memory' | 'rag' | 'llm-models' | 'software'
+type Tab = 'locations' | 'backup' | 'physical' | 'logical' | 'power' | 'pipeline' | 'testing' | 'gateway' | 'memory' | 'rag' | 'llm-models' | 'software'
 
 const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: 'locations', label: 'Locations', icon: '◉' },
@@ -23,6 +24,7 @@ const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: 'power', label: 'Power', icon: '⚡' },
   { id: 'pipeline', label: 'Pipeline', icon: '▷' },
   { id: 'testing', label: 'Testing', icon: '🧪' },
+  { id: 'gateway', label: 'Gateway', icon: '⬢' },
   { id: 'memory', label: 'Memory', icon: '◉' },
   { id: 'rag', label: 'RAG', icon: '◎' },
   { id: 'llm-models', label: 'LLM Models', icon: '🧠' },
@@ -73,6 +75,7 @@ export default function App() {
           {activeTab === 'power' && <PowerView />}
           {activeTab === 'pipeline' && <PipelineView />}
           {activeTab === 'testing' && <TestingView />}
+          {activeTab === 'gateway' && <GatewayView />}
           {activeTab === 'memory' && <MemoryView />}
           {activeTab === 'rag' && <RagView />}
           {activeTab === 'llm-models' && <LLMModelsView />}

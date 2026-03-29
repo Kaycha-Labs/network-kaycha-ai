@@ -219,7 +219,7 @@ export function RagView() {
           <h2 className="text-lg font-bold" style={{ color: C.textBright }}>JARVIS RAG — Knowledge Retrieval</h2>
           <p className="text-[11px] mt-1" style={{ color: C.textDim }}>
             Dual-layer RAG with hybrid vector + BM25 + HyDE + cross-encoder reranking across 7 ChromaDB collections.
-            FastAPI backend on IRON-PATRIOT:8100, MCP SSE proxy on :8101. nomic-embed-text 768d embeddings via SENTINEL:11434.
+            FastAPI backend on IRON-PATRIOT:8100, MCP SSE proxy on :8101. snowflake-arctic-embed2 1024d embeddings via IRON-PATRIOT:11434.
             QUBO-optimized context assembly when combined with jarvis-memory.
           </p>
         </div>
@@ -234,7 +234,7 @@ export function RagView() {
       <div className="flex gap-3 flex-wrap justify-center">
         <StatCard value="342K" label="Total Chunks" color={C.accent} />
         <StatCard value="7" label="Collections" color={C.teal} />
-        <StatCard value="768d" label="Embed Dim" color={C.purple} />
+        <StatCard value="1024d" label="Embed Dim" color={C.purple} />
         <StatCard value="Hybrid" label="Vec+BM25+HyDE" color={C.green100g} />
         <StatCard value="3" label="MCP Tools" color={C.orange} />
         <StatCard value="8" label="REST Endpoints" color={C.blue} />
@@ -300,10 +300,14 @@ export function RagView() {
       <Arrow />
 
       {/* ── REST API ──────────────────────────────────────── */}
-      <Phase label="REST API — IRON-PATRIOT:8100 (Python/FastAPI)" color="#a5b4fc">
+      <Phase label="REST API — IRON-PATRIOT:8100 + AI Server replica (Python/FastAPI)" color="#a5b4fc">
+        <div className="text-[10px] text-center mb-3" style={{ color: C.textDim }}>
+          Primary: IRON-PATRIOT (192.168.1.42:8100) | Replica: AI Server (204.10.144.25:8100) via CF tunnel (jarvis-rag.prdfactory.com).
+          Bidirectional sync daily 3 AM via sync_bidirectional.py. New: <span style={{ color: '#a5b4fc' }}>where</span>-filter on /search and /context for ChromaDB metadata filtering.
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <div className="text-[11px] font-semibold mb-2" style={{ color: '#a5b4fc' }}>8 Endpoints</div>
+            <div className="text-[11px] font-semibold mb-2" style={{ color: '#a5b4fc' }}>8 Endpoints + 3 Sync</div>
             <HFlow>
               <Node icon="P" title="POST /search" detail="Hybrid similarity search" file="use_bm25, rerank, use_hyde flags" variant="api" />
               <Node icon="P" title="POST /context" detail="Token-limited context block" variant="api" />
@@ -334,12 +338,13 @@ export function RagView() {
             ]} />
             <InfoBlock title="Config (config.py)" color="#a5b4fc" items={[
               'OLLAMA_BASE_URL: http://localhost:11434',
+              'EMBED_MODEL: snowflake-arctic-embed2 (1024d, 8192 ctx)',
               'HYDE_MODEL: llama3.2:3b (set "" to disable)',
               'BM25_MAX_DOCS: 300,000 per collection (raised from 80K)',
               'MAX_CACHED_INDEXES: 10 (LRU eviction)',
               'Embedding batch size: 64 chunks',
               'Embedding retry: 3 attempts, exponential backoff (2s, 4s, 8s)',
-              'Max text per embedding: 3000 chars (8192 token limit)',
+              'Max text per embedding: 8192 tokens (4x increase from nomic)',
             ]} />
           </div>
         </div>
@@ -355,7 +360,7 @@ export function RagView() {
           <div>
             <div className="text-[11px] font-semibold mb-2" style={{ color: '#6ee7b7' }}>Stage 1 — Vector Search (ChromaDB cosine similarity)</div>
             <HFlow>
-              <Node icon="E" title="Query Embed" detail="nomic-embed-text 768d" file="SENTINEL:11434 (Ollama)" variant="vector" />
+              <Node icon="E" title="Query Embed" detail="snowflake-arctic-embed2 1024d" file="IRON-PATRIOT:11434 (Ollama)" variant="vector" />
               <HArrow />
               <Node icon="C" title="ChromaDB" detail="Cosine distance, per-collection min_score" file="7 collections, local SQLite" variant="vector" />
               <HArrow />
@@ -415,7 +420,7 @@ export function RagView() {
       <Arrow />
 
       {/* ── 7 Collections ─────────────────────────────────── */}
-      <Phase label="7 ChromaDB Collections — Live Status (March 28, 2026)" color="#2dd4bf">
+      <Phase label="7 ChromaDB Collections — Live Status (March 29, 2026)" color="#2dd4bf">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {collections.map((col) => (
             <div
@@ -567,7 +572,7 @@ export function RagView() {
               <HArrow />
               <Node icon="C" title="Chunker" detail="4 strategies: text, schema, code, default" file="COLLECTION_CHUNK_CONFIG" variant="muted" />
               <HArrow />
-              <Node icon="E" title="Embedder" detail="nomic-embed-text 768d, batch=64" file="SENTINEL:11434, 3 retries" variant="embed" />
+              <Node icon="E" title="Embedder" detail="snowflake-arctic-embed2 1024d, batch=64" file="IRON-PATRIOT:11434, 3 retries" variant="embed" />
               <HArrow />
               <Node icon="S" title="ChromaDB Store" detail="Upsert + BM25 index trigger" file="IRON-PATRIOT local" variant="collection" />
             </HFlow>
@@ -652,7 +657,7 @@ export function RagView() {
             'System Python: C:\\Python312 (not venv)',
           ]} />
           <InfoBlock title="SENTINEL (Embedding + OWU)" color={C.blue} items={[
-            ':11434 — Ollama (nomic-embed-text 768d + llama3.2:3b HyDE)',
+            ':11434 — Ollama (snowflake-arctic-embed2 1024d + llama3.2:3b HyDE)',
             ':3000 — Open WebUI LLM proxy (all local + cloud models)',
             'Tailscale: 100.98.251.57 | LAN: 192.168.1.40',
             'RTX 5090 32GB, 64GB RAM',
@@ -670,7 +675,7 @@ export function RagView() {
           <InfoBlock title="Memory Budget" color={C.orange} items={[
             'ChromaDB: ~500MB-1GB (depending on collection sizes)',
             'BM25 (10 cached, LRU): ~200-640MB per large collection',
-            'Ollama embed model: ~1GB (nomic-embed-text)',
+            'Ollama embed model: ~1.2GB (snowflake-arctic-embed2, 1024d)',
             'Cross-encoder: ~300MB (lazy-loaded on first rerank)',
             'Total peak: ~3-4GB RAM (all 7 BM25 indexes + reranker)',
             'BM25_MAX_DOCS=300K: all collections covered',
@@ -685,7 +690,7 @@ export function RagView() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <InfoBlock title="Open WebUI" color={C.webPurple} items={[
             'SENTINEL:3000 — unified LLM proxy + chat UI',
-            'Routes: local Ollama (qwen3.5:122b, llama3.2:3b, nomic-embed-text)',
+            'Routes: local Ollama (qwen3.5:35b-a3b, llama3.2:3b, snowflake-arctic-embed2)',
             'Routes: colo ai-server Ollama models via Tailscale',
             'Routes: cloud APIs (OpenAI, Anthropic, Google, DeepSeek)',
             'owu-mcp-server bridges Claude Code tools to OWU dispatch',
@@ -760,7 +765,7 @@ export function RagView() {
           </div>
           <div>
             <span style={{ color: '#f9a8d4' }}>4. Embed</span>
-            {' \u2192 SENTINEL:11434 nomic-embed-text (768d vector, ~100ms)'}
+            {' \u2192 IRON-PATRIOT:11434 snowflake-arctic-embed2 (1024d vector, 8192 ctx, ~100ms)'}
           </div>
           <div>
             <span style={{ color: '#f9a8d4' }}>5. HyDE</span>
