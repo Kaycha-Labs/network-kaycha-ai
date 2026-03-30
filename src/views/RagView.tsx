@@ -236,6 +236,7 @@ export function RagView() {
         <StatCard value="7" label="Collections" color={C.teal} />
         <StatCard value="1024d" label="Embed Dim" color={C.purple} />
         <StatCard value="Hybrid" label="Vec+BM25+HyDE" color={C.green100g} />
+        <StatCard value="6" label="Filter Params" color={C.pink} />
         <StatCard value="3" label="MCP Tools" color={C.orange} />
         <StatCard value="8" label="REST Endpoints" color={C.blue} />
         <StatCard value="2x/day" label="Live Refresh" color={C.pink} />
@@ -261,23 +262,30 @@ export function RagView() {
       <Phase label="MCP Layer — 3 Tools (IRON-PATRIOT:8101 SSE)" color="#60a5fa">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Node icon="S" title="rag_search" detail="Semantic + hybrid search" file="n_results: 1-50 (default 10)" variant="mcp" />
+            <Node icon="S" title="rag_search" detail="Semantic + hybrid search + metadata filters" file="n_results: 1-50 (default 10)" variant="mcp" />
             <InfoBlock title="Parameters" color="#60a5fa" items={[
               'query: natural language string',
               'n_results: max results (default 10)',
               'collections: comma-sep filter or all 7',
+              'state: state code filter (e.g. "FL", "CO") — auto-uppercases',
+              'type: chunk type (action_limits, regulatory_overview, test_panels, code...)',
+              'source: origin filter (github, regulations, h_drive, powerdms...)',
+              'language: code language (typescript, python, sql...) — auto-lowercases',
+              'repo: GitHub repo name (e.g. kaycha-web-851)',
+              'where: raw ChromaDB JSON filter (e.g. {"state": {"$in": ["FL","CO"]}})',
               'Returns: ranked results with scores + source metadata',
-              'Best for: finding specific facts, code, or schema',
             ]} />
           </div>
           <div className="space-y-2">
-            <Node icon="C" title="rag_context" detail="Pre-formatted context block" file="max_tokens: 4K default, 16K max" variant="mcp" />
+            <Node icon="C" title="rag_context" detail="Pre-formatted context block + metadata filters" file="max_tokens: 4K default, 16K max" variant="mcp" />
             <InfoBlock title="Parameters" color="#60a5fa" items={[
               'query: natural language question or topic',
               'max_tokens: 4000 default, 16000 max',
               'collections: optional filter',
+              'state / type / source / language / repo / where: same filters as rag_search',
+              'Filters merge with $and logic — combine freely',
               'Returns: [Source N: ...] formatted block with attribution',
-              'Best for: session-start prompt injection',
+              'Best for: session-start prompt injection with precise scope',
             ]} />
           </div>
           <div className="space-y-2">
@@ -293,7 +301,54 @@ export function RagView() {
         </div>
         <div className="mt-3 text-[10px] text-center" style={{ color: C.textDim }}>
           MCP server at :8101 (mcp_server.py) is a Python HTTP proxy forwarding to REST API at :8100.
-          IRONMAN, JERICHO, SENTINEL register via .claude.json mcp-remote config.
+          All 5 workstations register via .claude.json mcp-remote config. CLAUDE.md RULE 1b teaches Claude when to use filters.
+        </div>
+      </Phase>
+
+      <Arrow />
+
+      {/* ── Metadata Filtering ────────────────────────────── */}
+      <Phase label="Metadata Filtering (March 30, 2026)" color="#f472b6">
+        <div className="text-[10px] text-center mb-3" style={{ color: C.textDim }}>
+          All filters pass through to ChromaDB <span style={{ color: '#f9a8d4' }}>where</span> clauses.
+          Multiple filters combine with <span style={{ color: '#f9a8d4' }}>$and</span> logic. Auto-normalization: state uppercases, language lowercases.
+          17/17 test cases passing (test-rag-metadata-filtering.md).
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <InfoBlock title="Filter Parameters" color="#f472b6" items={[
+            'state= — "FL", "CO", "MA", "NV"... (auto-uppercases)',
+            'type= — "action_limits", "regulatory_overview", "test_panels", "code"',
+            'source= — "github", "regulations", "h_drive", "powerdms"',
+            'language= — "typescript", "python", "sql", "php" (auto-lowercases)',
+            'repo= — "kaycha-web-851", "yourcoa-sso", "kaycha_ai"',
+            'where= — Raw ChromaDB JSON: {"state": {"$in": ["FL","CO"]}}',
+          ]} />
+          <InfoBlock title="When to Filter (RULE 1b)" color="#f472b6" items={[
+            'Regulations: ALWAYS filter by state — unfiltered returns mixed states',
+            'Code: filter by language and/or repo when target is known',
+            'Documents: filter by source to narrow PowerDMS vs H: drive',
+            'Multi-state: use where $in for cross-state comparisons',
+            'Type: narrow action_limits vs regulatory_overview vs test_panels',
+            'Combined: all filters merge with $and — stack as many as needed',
+          ]} />
+          <InfoBlock title="Instruction Chain (3 Layers)" color="#f472b6" items={[
+            'Layer 1: Prompt hook (hook.js) — auto-injects RAG, no filters',
+            'Layer 2: MCP server instructions — filter guidance on connection',
+            'Layer 3: CLAUDE.md RULE 1b — filter lookup table + rules',
+            'Layer 2+3 deployed to all 5 machines via fleet_push',
+            'Tool descriptions document all params with examples',
+            'Graceful fallback: malformed where JSON silently ignored',
+          ]} />
+        </div>
+        <div className="mt-3">
+          <CodeBlock color="#f472b6">
+            <div style={{ color: '#f9a8d4' }}>{'// Example: Florida pesticide action limits'}</div>
+            <div>{'rag_search(query="pesticide limits", state="FL", type="action_limits")'}</div>
+            <div style={{ color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>{'// Returns: ONLY FL action_limits chunks (3 results, all Florida)'}</div>
+            <div style={{ color: '#f9a8d4', marginTop: '8px' }}>{'// Example: Multi-state comparison'}</div>
+            <div>{'rag_context(query="heavy metal limits", where=\'{"state": {"$in": ["FL","CO","MA"]}}\')'}</div>
+            <div style={{ color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>{'// Returns: formatted context from FL, CO, MA only'}</div>
+          </CodeBlock>
         </div>
       </Phase>
 
@@ -753,7 +808,7 @@ export function RagView() {
         <div className="font-mono text-[11px] space-y-1.5 mb-4" style={{ color: C.textDim }}>
           <div>
             <span style={{ color: '#8b5cf6' }}>1. Client</span>
-            {' \u2192 '}rag_context(<span style={{ color: '#fbbf24' }}>"cannabis potency testing florida"</span>)
+            {' \u2192 '}rag_context(<span style={{ color: '#fbbf24' }}>"pesticide testing limits"</span>, <span style={{ color: '#f9a8d4' }}>state="FL"</span>, <span style={{ color: '#f9a8d4' }}>type="action_limits"</span>)
           </div>
           <div>
             <span style={{ color: '#a5b4fc' }}>2. mcp-remote</span>
@@ -761,7 +816,9 @@ export function RagView() {
           </div>
           <div>
             <span style={{ color: '#a5b4fc' }}>3. MCP:8101</span>
-            {' \u2192 POST http://localhost:8100/context'}
+            {' \u2192 build ChromaDB where: '}
+            <span style={{ color: '#f9a8d4' }}>{'{"$and": [{"state":"FL"}, {"type":"action_limits"}]}'}</span>
+            {' \u2192 POST :8100/context'}
           </div>
           <div>
             <span style={{ color: '#f9a8d4' }}>4. Embed</span>
@@ -773,7 +830,9 @@ export function RagView() {
           </div>
           <div>
             <span style={{ color: '#6ee7b7' }}>6. ChromaDB</span>
-            {' \u2192 cosine search jarvis_regulations + jarvis_knowledge (~100-500ms)'}
+            {' \u2192 cosine search with '}
+            <span style={{ color: '#f9a8d4' }}>where filter</span>
+            {' \u2192 only FL action_limits chunks (~100-500ms)'}
           </div>
           <div>
             <span style={{ color: '#fcd34d' }}>7. BM25</span>
