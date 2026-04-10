@@ -186,9 +186,9 @@ function BocaLabDetail({ activeModal, openModal }: SiteDetailProps) {
 
       {/* === IRONMAN === */}
       {c('ironman', 300, 110, 600, 170, [
-        'CPU: AMD Threadripper PRO 9995WX • 64C/128T',
-        'RAM: 256GB DDR5 ECC RDIMM (4×64GB)',
-        'GPU: 2× RTX PRO 6000 Blackwell 96GB (192GB NVLink VRAM)',
+        'CPU: AMD Threadripper PRO 9995WX • 96C/192T',
+        'RAM: 256GB DDR5 ECC RDIMM',
+        'GPU: 2× RTX PRO 6000 Blackwell 96GB (~192GB total VRAM)',
         'SSD: 2× 4TB Samsung 990 PRO Gen4 NVMe',
         'NIC1: Marvell 10GbE → MS510 (192.168.1.43)  •  NIC2: Realtek 2.5GbE (192.168.1.50)  •  CX-5 (disconnected)',
         'Role: Flagship inference, Cursor, Claude Desktop',
@@ -253,7 +253,7 @@ function BocaLabDetail({ activeModal, openModal }: SiteDetailProps) {
       ])}
       {c('sentinel', 830, 555, 330, 135, [
         'CPU: AMD Ryzen 9 9950X3D 16C/32T',
-        'RAM: 192GB DDR5',
+        'RAM: 64GB DDR5',
         'GPU: RTX 5090 32GB',
         'SSD: 4TB + 3TB (6.4TB total)',
         'NIC: Realtek 2.5GbE → MS510TXUP',
@@ -303,7 +303,7 @@ function BocaLabDetail({ activeModal, openModal }: SiteDetailProps) {
         { color: C.warning, label: 'Flagship', x: 160 },
         { color: C.purple, label: 'Dual-Homed Compute', x: 280 },
         { color: C.pink, label: 'Daily Driver', x: 470 },
-        { color: C.green100g, label: '100GbE AI Fabric', x: 160, y: 995 },
+        { color: C.green100g, label: '40GbE AI Fabric', x: 160, y: 995 },
         { color: C.cyan10g, label: '10G/2.5G LAN', x: 340, y: 995 },
         { color: C.accent, label: 'Display / DP 2.1', x: 510, y: 995 },
         { color: C.red, label: 'WAN / VPN', x: 680, y: 995 },

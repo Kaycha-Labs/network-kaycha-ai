@@ -355,10 +355,11 @@ export function RagView() {
       <Arrow />
 
       {/* ── REST API ──────────────────────────────────────── */}
-      <Phase label="REST API — IRON-PATRIOT:8100 + AI Server replica (Python/FastAPI)" color="#a5b4fc">
+      <Phase label="REST API — AI Server:8100 (primary) + IRON-PATRIOT:8100 (MCP host)" color="#a5b4fc">
         <div className="text-[10px] text-center mb-3" style={{ color: C.textDim }}>
-          Primary: IRON-PATRIOT (192.168.1.42:8100) | Replica: AI Server (204.10.144.25:8100) via CF tunnel (jarvis-rag.prdfactory.com).
-          Bidirectional sync daily 3 AM via sync_bidirectional.py. New: <span style={{ color: '#a5b4fc' }}>where</span>-filter on /search and /context for ChromaDB metadata filtering.
+          Primary: AI Server (204.10.144.25:8100, Docker, 328K+ chunks) | MCP Host: IRON-PATRIOT (192.168.1.42:8100, NSSM).
+          LLM Gateway routes to AI Server. MCP SSE proxy on IRON-PATRIOT:8101 forwards to local :8100.
+          Bidirectional sync daily via sync_bidirectional.py. <span style={{ color: '#a5b4fc' }}>where</span>-filter on /search and /context for metadata filtering.
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
@@ -702,9 +703,9 @@ export function RagView() {
       {/* ── Infrastructure ────────────────────────────────── */}
       <Phase label="Infrastructure" color="#94a3b8">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <InfoBlock title="IRON-PATRIOT (Primary Host)" color={C.teal} items={[
+          <InfoBlock title="IRON-PATRIOT (MCP Host)" color={C.teal} items={[
             ':8100 — jarvis-rag REST API (FastAPI/Uvicorn, NSSM)',
-            ':8101 — jarvis-rag MCP SSE (Python proxy -> :8100)',
+            ':8101 — jarvis-rag MCP SSE (Python proxy → :8100)',
             'Tailscale: 100.75.25.51 | LAN: 192.168.1.42',
             'RTX PRO 6000 96GB, 128GB RAM',
             'ChromaDB local: E:\\Projects\\jarvis-rag\\data\\chroma\\',
@@ -719,13 +720,13 @@ export function RagView() {
             'Embedding batch: 64 per call, 3000 char max',
             'Fallback: progressive truncation (2000, 1000, 500 chars)',
           ]} />
-          <InfoBlock title="ai-server (Colo Replica)" color={C.coloGreen} items={[
+          <InfoBlock title="AI Server (Primary — 328K+ chunks)" color={C.coloGreen} items={[
             'Dell R760xa @ Revelex Boca Raton colo',
             '2× NVIDIA L40S 48GB | 512GB RAM',
             'Public: 204.10.144.25:8100 (jarvis-rag Docker)',
-            'Tailscale: 100.78.92.45',
-            'Bidirectional sync with IRON-PATRIOT nightly 4:30 AM',
-            'sync_bidirectional.py: push+pull ChromaDB deltas',
+            'LLM Gateway dedup/extraction routes here',
+            'Tailscale: ai-server (100.73.184.118)',
+            'Bidirectional sync with IRON-PATRIOT nightly',
           ]} />
           <InfoBlock title="Memory Budget" color={C.orange} items={[
             'ChromaDB: ~500MB-1GB (depending on collection sizes)',

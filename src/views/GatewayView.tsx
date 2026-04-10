@@ -134,7 +134,7 @@ export function GatewayView() {
           <h2 className="text-lg font-bold" style={{ color: C.textBright }}>LLM Gateway Proxy</h2>
           <p className="text-[11px] mt-1" style={{ color: C.textDim }}>
             All LLM API calls across the fleet route through IRONMAN:4000 for audit logging, cost tracking, and smart fleet routing.
-            PM2 managed. Supports Anthropic, Ollama, OpenAI, DeepSeek, GLM, and Google providers.
+            NSSM service managed. Supports Anthropic, Ollama, OpenAI, DeepSeek, GLM, and Google providers.
             Repo: github.com/Jamesjhf1/llm-gateway
           </p>
         </div>
@@ -151,7 +151,7 @@ export function GatewayView() {
         <StatCard value="5" label="Fleet Machines" color={C.green100g} />
         <StatCard value="8" label="API Endpoints" color={C.blue} />
         <StatCard value="5s" label="Health Poll" color={C.teal} />
-        <StatCard value="PM2" label="Process Mgr" color={C.orange} />
+        <StatCard value="NSSM" label="Process Mgr" color={C.orange} />
         <StatCard value="4000" label="Port" color={C.warning} />
       </div>
 
@@ -184,12 +184,12 @@ export function GatewayView() {
           </div>
           <div className="space-y-3">
             <InfoBlock title="Runtime" color="#f59e0b" items={[
-              'Node.js on IRONMAN (192.168.1.43:4000)',
-              'PM2 managed: pm2 restart llm-gateway',
+              'Node.js + tsx on IRONMAN (192.168.1.43:4000)',
+              'NSSM service: nssm restart LLMGateway (elevated prompt)',
+              'Logs: E:\\Projects\\llm-gateway\\logs\\service-out.log',
               'Bearer token auth per provider',
-              'Request/response audit logging',
+              'Request/response audit logging to SQLite',
               'Cost tracking per caller, model, provider',
-              'Latency histograms per route',
             ]} />
             <InfoBlock title="Supported Providers" color="#a5b4fc" items={[
               'Anthropic (Claude API) — /v1/anthropic/*',
@@ -342,12 +342,12 @@ export function GatewayView() {
       {/* ── Monitoring ────────────────────────────────────── */}
       <Phase label="Monitoring & Observability" color="#2dd4bf">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <InfoBlock title="PM2 Process Manager" color="#2dd4bf" items={[
-            'pm2 status llm-gateway — process status',
-            'pm2 logs llm-gateway — live log stream',
-            'pm2 restart llm-gateway — restart service',
-            'pm2 monit — CPU/memory dashboard',
-            'Auto-restart on crash (max_restarts: 10)',
+          <InfoBlock title="NSSM Service Manager" color="#2dd4bf" items={[
+            'Service: LLMGateway (NSSM managed)',
+            'nssm restart LLMGateway — restart service (elevated)',
+            'Logs: service-out.log + service-err.log',
+            'Runs: node --import tsx src/server.ts',
+            'Auto-restart on crash via NSSM recovery',
           ]} />
           <InfoBlock title="Prometheus Metrics" color="#2dd4bf" items={[
             'Endpoint: http://192.168.1.43:4000/metrics',
@@ -355,7 +355,7 @@ export function GatewayView() {
             'llm_gateway_request_duration_seconds — histogram',
             'llm_gateway_fleet_health — per-machine gauge',
             'llm_gateway_pipeline_* — ingest success/fail counters',
-            'Scraped by Prometheus on IRON-PATRIOT:9090',
+            'Scraped by Prometheus on JERICHO:9090',
           ]} />
           <InfoBlock title="Dashboard Endpoints" color="#2dd4bf" items={[
             'GET /health — uptime, total calls',
