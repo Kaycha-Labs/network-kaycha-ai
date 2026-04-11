@@ -81,8 +81,9 @@ export const NODES: Record<string, NodeData> = {
       { label: 'DP 2.1 (×2)', speed: 'DisplayPort 2.1', target: '2× Samsung G9 OLED', color: 'display' },
     ],
     services: [
-      { name: 'LLM Gateway Proxy', port: '4000', detail: 'All fleet LLM calls routed here — audit + cost + routing (NSSM service)' },
+      { name: 'LLM Gateway Proxy', port: '4000', detail: 'All fleet LLM calls routed here — audit + cost + routing (NSSM: LLMGateway)' },
       { name: 'Ollama', port: '11434', detail: 'qwen3.5:122b-tuned pinned (81GB VRAM), 89 tok/s' },
+      { name: 'JARVIS Agents', port: '9101', detail: 'Fleet orchestrator + incident response — Prometheus metrics, Supabase tracking' },
       { name: 'Open WebUI', port: '3000', detail: 'Multi-endpoint: all Ollama nodes on AI Fabric' },
       { name: 'Parsec Host', detail: 'Near-native GPU remote desktop' },
     ],
@@ -90,6 +91,7 @@ export const NODES: Record<string, NodeData> = {
       '2× RTX PRO 6000 Blackwell (1 Max-Q + 1 regular) — ~192GB total VRAM',
       'Primary large-model inference: qwen3.5:122b-tuned (81GB VRAM, pinned keep_alive:-1)',
       'LLM Gateway runs as NSSM service (LLMGateway), NOT PM2',
+      'JARVIS Agents: fleet-orchestrator (60s poll), knowledge-loop (daily), incident-response (webhook), cost-optimizer (daily)',
       'Dual LAN: Marvell 10GbE (.43 DHCP) + Realtek 2.5GbE (.50 static)',
     ],
   },
@@ -213,7 +215,8 @@ export const NODES: Record<string, NodeData> = {
     ],
     services: [
       { name: 'Ollama', port: '11434', detail: 'qwen3.5:122b-tuned pinned (81GB/96GB VRAM, 88 tok/s)' },
-      { name: 'Prometheus', port: '9090', detail: 'Metrics scraper via WinRM across fleet' },
+      { name: 'Prometheus', port: '9090', detail: 'Metrics scraper — fleet health + JARVIS agents + AI services' },
+      { name: 'Alertmanager', port: '9093', detail: 'Alert routing → JARVIS incident-response webhook (Docker)' },
       { name: 'Grafana', port: '3001', detail: 'AI fleet monitoring dashboards' },
       { name: 'Open WebUI', port: '3000', detail: 'Docker restart=always' },
       { name: 'JARVIS-OPS Orchestrator', detail: 'Discord bot + task queue + 3 worker agents' },
@@ -222,6 +225,7 @@ export const NODES: Record<string, NodeData> = {
     notes: [
       'Auto-start configured: Ollama (startup shortcut), Docker Desktop, Open WebUI (docker), Claude Desktop (AppX AUMID)',
       'Docker crash fix: stale Unix socket reparse points — kill Docker + wsl --shutdown, rename dirs',
+      'Alertmanager routes alerts to IRONMAN:9101/webhook/alert → JARVIS incident-response pipeline',
     ],
   },
 
