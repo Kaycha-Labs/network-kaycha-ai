@@ -176,12 +176,12 @@ export function MemoryView() {
       <Arrow />
 
       {/* ── Phase 1: MCP + Write Pipeline ─────────────────── */}
-      <Phase label="Phase 1 - MCP Layer + Write Pipeline (8 Tools)" color="#60a5fa">
+      <Phase label="Phase 1 - MCP Layer + Write Pipeline (8 Tools + AP Memory)" color="#60a5fa">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
             <div className="text-[11px] font-semibold mb-2" style={{ color: '#93c5fd' }}>Read Tools (Retrieval)</div>
             <HFlow>
-              <Node icon="Q" title="memory_optimize" detail="Full QUBO pipeline - both sources" file="POST /memory/optimize" variant="mcp" />
+              <Node icon="Q" title="memory_optimize" detail="Full QUBO pipeline - 3 sources (memory + RAG + AP)" file="POST /memory/optimize" variant="mcp" />
               <Node icon="R" title="rag_context" detail="Pre-formatted context string" file="POST /rag/context" variant="mcp" />
             </HFlow>
             <HFlow>
@@ -212,7 +212,7 @@ export function MemoryView() {
               <div>{'{'} query: string</div>
               <div>{'  '}max_tokens?: 100-32000 <span style={{ color: 'rgba(255,255,255,0.3)' }}>{'// default 4000'}</span></div>
               <div>{'  '}max_chunks?: 1-100 <span style={{ color: 'rgba(255,255,255,0.3)' }}>{'// default 20'}</span></div>
-              <div>{'  '}sources?: ["jarvis_memory","jarvis_rag"]</div>
+              <div>{'  '}sources?: ["jarvis_memory","jarvis_rag","ap_memory"]</div>
               <div>{'  '}collection_weights?: {'{'} jarvis_schemas: 1.5 {'}'} {'}'}</div>
               <div style={{ color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>{'// Returns: selected_chunks[], energy, timing_ms, solver_used'}</div>
             </CodeBlock>
@@ -291,11 +291,13 @@ export function MemoryView() {
       <Phase label="QUBO Pipeline - Retrieval, Scoring, Solving" color="#34d399">
         <div className="space-y-3">
           {/* Retrieval */}
-          <div className="text-[11px] font-semibold" style={{ color: '#6ee7b7' }}>1. Retrieval (parallel, circuit-breaker protected)</div>
+          <div className="text-[11px] font-semibold" style={{ color: '#6ee7b7' }}>1. Retrieval (3-way parallel, circuit-breaker protected)</div>
           <HFlow>
-            <Node icon="M" title="jarvis_memory" detail="CF Worker FTS - decisions, patterns" file="222-428ms latency" variant="store" />
+            <Node icon="M" title="jarvis_memory" detail="Qdrant FTS - decisions, patterns" file="222-428ms latency" variant="store" />
             <HArrow />
-            <Node icon="R" title="jarvis_rag" detail="ChromaDB - 7 collections, 342K chunks" file="100-500ms latency" variant="store" />
+            <Node icon="R" title="jarvis_rag" detail="Qdrant + BM25 hybrid - 1.4M chunks, 7 collections" file="100-500ms latency" variant="store" />
+            <HArrow />
+            <Node icon="AP" title="AP Memory" detail="HRR lattice - braid topology, wave resonance" file="Iron-Patriot:8105 (primary)" variant="entity" />
             <HArrow />
             <Node icon="G" title="Entity Graph" detail="SQLite + NetworkX - N-hop expansion" file="92 nodes, 209 edges" variant="entity" />
           </HFlow>
@@ -311,7 +313,7 @@ export function MemoryView() {
           </HFlow>
 
           {/* BQM */}
-          <div className="text-[11px] font-semibold mt-3" style={{ color: '#6ee7b7' }}>3. BQM Construction (8-term energy function)</div>
+          <div className="text-[11px] font-semibold mt-3" style={{ color: '#6ee7b7' }}>3. BQM Construction (9-term energy function)</div>
           <div className="rounded-lg border p-4 font-mono text-[11px] leading-relaxed" style={{ background: 'rgba(52,211,153,0.05)', borderColor: 'rgba(52,211,153,0.15)', color: '#6ee7b7' }}>
             <div>H = <span style={{ color: '#fca5a5' }}>-alpha(5.0)</span> SUM(rel_i * s_i)</div>
             <div className="ml-4">+ <span style={{ color: '#fcd34d' }}>beta(3.0)</span> SUM(sim_ij * s_i * s_j)</div>

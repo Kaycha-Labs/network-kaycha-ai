@@ -218,7 +218,7 @@ export function RagView() {
         <div>
           <h2 className="text-lg font-bold" style={{ color: C.textBright }}>JARVIS RAG — Knowledge Retrieval</h2>
           <p className="text-[11px] mt-1" style={{ color: C.textDim }}>
-            Dual-layer RAG with hybrid vector + BM25 + HyDE + cross-encoder reranking across 7 ChromaDB collections.
+            3-layer RAG: Qdrant vector + BM25 keyword + AP Memory HRR lattice. Hybrid search with HyDE + reranking across 7 Qdrant collections (1.4M chunks). All ingests dual-write to AP Memory.
             FastAPI backend on IRON-PATRIOT:8100, MCP SSE proxy on :8101. snowflake-arctic-embed2 1024d embeddings via IRON-PATRIOT:11434.
             QUBO-optimized context assembly when combined with jarvis-memory.
           </p>
@@ -232,7 +232,7 @@ export function RagView() {
 
       {/* Stats Bar */}
       <div className="flex gap-3 flex-wrap justify-center">
-        <StatCard value="1.03M" label="Total Chunks" color={C.accent} />
+        <StatCard value="1.44M" label="Total Chunks" color={C.accent} />
         <StatCard value="7" label="Collections" color={C.teal} />
         <StatCard value="1024d" label="Embed Dim" color={C.purple} />
         <StatCard value="Hybrid" label="Vec+BM25+HyDE" color={C.green100g} />
@@ -272,7 +272,7 @@ export function RagView() {
               'source: origin filter (github, regulations, h_drive, powerdms...)',
               'language: code language (typescript, python, sql...) — auto-lowercases',
               'repo: GitHub repo name (e.g. kaycha-web-851)',
-              'where: raw ChromaDB JSON filter (e.g. {"state": {"$in": ["FL","CO"]}})',
+              'where: raw Qdrant JSON filter (e.g. {"state": {"$in": ["FL","CO"]}})',
               'Returns: ranked results with scores + source metadata',
             ]} />
           </div>
@@ -310,7 +310,7 @@ export function RagView() {
       {/* ── Metadata Filtering ────────────────────────────── */}
       <Phase label="Metadata Filtering (March 30, 2026)" color="#f472b6">
         <div className="text-[10px] text-center mb-3" style={{ color: C.textDim }}>
-          All filters pass through to ChromaDB <span style={{ color: '#f9a8d4' }}>where</span> clauses.
+          All filters pass through to Qdrant <span style={{ color: '#f9a8d4' }}>where</span> clauses.
           Multiple filters combine with <span style={{ color: '#f9a8d4' }}>$and</span> logic. Auto-normalization: state uppercases, language lowercases.
           17/17 test cases passing (test-rag-metadata-filtering.md).
         </div>
@@ -321,7 +321,7 @@ export function RagView() {
             'source= — "github", "regulations", "h_drive", "powerdms"',
             'language= — "typescript", "python", "sql", "php" (auto-lowercases)',
             'repo= — "kaycha-web-851", "yourcoa-sso", "kaycha_ai"',
-            'where= — Raw ChromaDB JSON: {"state": {"$in": ["FL","CO"]}}',
+            'where= — Raw Qdrant JSON: {"state": {"$in": ["FL","CO"]}}',
           ]} />
           <InfoBlock title="When to Filter (RULE 1b)" color="#f472b6" items={[
             'Regulations: ALWAYS filter by state — unfiltered returns mixed states',
@@ -357,7 +357,7 @@ export function RagView() {
       {/* ── REST API ──────────────────────────────────────── */}
       <Phase label="REST API — AI Server:8100 (primary) + IRON-PATRIOT:8100 (MCP host)" color="#a5b4fc">
         <div className="text-[10px] text-center mb-3" style={{ color: C.textDim }}>
-          Primary: AI Server (204.10.144.25:8100, Docker, 328K+ chunks) | MCP Host: IRON-PATRIOT (192.168.1.42:8100, NSSM).
+          Qdrant: IRON-PATRIOT (local) + AI Server (204.10.144.25:6333, Docker) dual-write | API: IRON-PATRIOT:8100 (NSSM) | 1.4M chunks | AP Memory dual-write on ingest.
           LLM Gateway routes to AI Server. MCP SSE proxy on IRON-PATRIOT:8101 forwards to local :8100.
           Bidirectional sync daily via sync_bidirectional.py. <span style={{ color: '#a5b4fc' }}>where</span>-filter on /search and /context for metadata filtering.
         </div>
@@ -385,7 +385,7 @@ export function RagView() {
             <InfoBlock title="Runtime" color="#a5b4fc" items={[
               'Python 3.12 (C:\\Python312, NOT a venv)',
               'FastAPI + Uvicorn (NSSM Windows service)',
-              'ChromaDB persistent storage (local SQLite + parquet)',
+              'Qdrant persistent storage (local SQLite + parquet)',
               'rank-bm25 (BM25Okapi indexing)',
               'sentence-transformers (cross-encoder reranking)',
               'pdfplumber + python-docx (document parsing)',
@@ -414,11 +414,11 @@ export function RagView() {
 
           {/* Stage 1: Vector */}
           <div>
-            <div className="text-[11px] font-semibold mb-2" style={{ color: '#6ee7b7' }}>Stage 1 — Vector Search (ChromaDB cosine similarity)</div>
+            <div className="text-[11px] font-semibold mb-2" style={{ color: '#6ee7b7' }}>Stage 1 — Vector Search (Qdrant cosine similarity)</div>
             <HFlow>
               <Node icon="E" title="Query Embed" detail="snowflake-arctic-embed2 1024d" file="IRON-PATRIOT:11434 (Ollama)" variant="vector" />
               <HArrow />
-              <Node icon="C" title="ChromaDB" detail="Cosine distance, per-collection min_score" file="7 collections, local SQLite" variant="vector" />
+              <Node icon="C" title="Qdrant" detail="Cosine distance, per-collection min_score" file="7 collections, local SQLite" variant="vector" />
               <HArrow />
               <Node icon="R" title="Vector Results" detail="Top-N by similarity (1.0 - distance)" file="~100-500ms" variant="vector" />
             </HFlow>
@@ -448,7 +448,7 @@ export function RagView() {
               <HArrow />
               <Node icon="B" title="Blend Embeddings" detail="alpha=0.5: query + hypothesis" file="Falls back to query-only on failure" variant="hyde" />
               <HArrow />
-              <Node icon="S" title="HyDE Search" detail="Blended embedding -> ChromaDB" file="Adds ~2-5s latency" variant="hyde" />
+              <Node icon="S" title="HyDE Search" detail="Blended embedding -> Qdrant" file="Adds ~2-5s latency" variant="hyde" />
             </HFlow>
             <div className="text-[10px] text-center mt-2" style={{ color: C.textDim }}>
               Disabled if HYDE_MODEL="" or Ollama unavailable. Useful for abstract/conceptual queries where keywords fail.
@@ -467,7 +467,7 @@ export function RagView() {
             </HFlow>
             <div className="text-[10px] text-center mt-2" style={{ color: C.textDim }}>
               Cross-encoder reranking adds ~500-1000ms for 50 candidates. Falls back to score-sorted truncation if model unavailable.
-              RRF handles BM25-only hits by fetching full text/metadata from ChromaDB.
+              RRF handles BM25-only hits by fetching full text/metadata from Qdrant.
             </div>
           </div>
         </div>
@@ -476,7 +476,7 @@ export function RagView() {
       <Arrow />
 
       {/* ── 7 Collections ─────────────────────────────────── */}
-      <Phase label="7 ChromaDB Collections — Live Status (March 30, 2026)" color="#2dd4bf">
+      <Phase label="7 Qdrant Collections — Live Status (April 14, 2026)" color="#2dd4bf">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {collections.map((col) => (
             <div
@@ -630,7 +630,7 @@ export function RagView() {
               <HArrow />
               <Node icon="E" title="Embedder" detail="snowflake-arctic-embed2 1024d, batch=64" file="IRON-PATRIOT:11434, 3 retries" variant="embed" />
               <HArrow />
-              <Node icon="S" title="ChromaDB Store" detail="Upsert + BM25 index trigger" file="IRON-PATRIOT local" variant="collection" />
+              <Node icon="S" title="Qdrant Store" detail="Upsert + BM25 index trigger" file="IRON-PATRIOT local" variant="collection" />
             </HFlow>
           </div>
 
@@ -687,7 +687,7 @@ export function RagView() {
               'tools/task-bisync.bat → sync_bidirectional.py (venv python, fixed 2026-03-28)',
             ]} />
             <InfoBlock title="Performance Characteristics" color="#fdba74" items={[
-              'Vector search: ~100-500ms (Ollama embed + ChromaDB)',
+              'Vector search: ~100-500ms (Ollama embed + Qdrant)',
               'BM25 search: ~10-50ms (in-memory rank_bm25)',
               'RRF merge: ~5-10ms (O(n) merge of two sorted lists)',
               'HyDE generation: ~2-5s (Ollama hypothesis)',
@@ -708,7 +708,7 @@ export function RagView() {
             ':8101 — jarvis-rag MCP SSE (Python proxy → :8100)',
             'Tailscale: 100.75.25.51 | LAN: 192.168.1.42',
             'RTX PRO 6000 96GB, 128GB RAM',
-            'ChromaDB local: E:\\Projects\\jarvis-rag\\data\\chroma\\',
+            'Qdrant local: E:\\Projects\\jarvis-rag\\data\\chroma\\',
             'BM25 pickles: E:\\Projects\\jarvis-rag\\data\\bm25\\',
             'System Python: C:\\Python312 (not venv)',
           ]} />
@@ -720,7 +720,7 @@ export function RagView() {
             'Embedding batch: 64 per call, 3000 char max',
             'Fallback: progressive truncation (2000, 1000, 500 chars)',
           ]} />
-          <InfoBlock title="AI Server (Primary — 328K+ chunks)" color={C.coloGreen} items={[
+          <InfoBlock title="AI Server (Primary — 1.4M chunks)" color={C.coloGreen} items={[
             'Dell R760xa @ Revelex Boca Raton colo',
             '2× NVIDIA L40S 48GB | 512GB RAM',
             'Public: 204.10.144.25:8100 (jarvis-rag Docker)',
@@ -729,7 +729,7 @@ export function RagView() {
             'Bidirectional sync with IRON-PATRIOT nightly',
           ]} />
           <InfoBlock title="Memory Budget" color={C.orange} items={[
-            'ChromaDB: ~500MB-1GB (depending on collection sizes)',
+            'Qdrant: ~500MB-1GB (depending on collection sizes)',
             'BM25 (10 cached, LRU): ~200-640MB per large collection',
             'Ollama embed model: ~1.2GB (snowflake-arctic-embed2, 1024d)',
             'Cross-encoder: ~300MB (lazy-loaded on first rerank)',
@@ -781,7 +781,7 @@ export function RagView() {
             'sync_bidirectional.py — IRON-PATRIOT ↔ ai-server sync',
             'pipeline/chunker.py — 4 chunking strategies + tiktoken',
             'pipeline/embedder.py — Ollama batch embed + retry',
-            'pipeline/ingestor.py — ChromaDB upsert + BM25 trigger',
+            'pipeline/ingestor.py — Qdrant upsert + BM25 trigger',
           ]} />
           <InfoBlock title="Retrieval Layer" color={C.green100g} items={[
             'retrieval/server.py — FastAPI 8 endpoints',
@@ -817,7 +817,7 @@ export function RagView() {
           </div>
           <div>
             <span style={{ color: '#a5b4fc' }}>3. MCP:8101</span>
-            {' \u2192 build ChromaDB where: '}
+            {' \u2192 build Qdrant where: '}
             <span style={{ color: '#f9a8d4' }}>{'{"$and": [{"state":"FL"}, {"type":"action_limits"}]}'}</span>
             {' \u2192 POST :8100/context'}
           </div>
@@ -830,7 +830,7 @@ export function RagView() {
             {' \u2192 llama3.2:3b generates hypothesis, blend alpha=0.5 (~2-5s)'}
           </div>
           <div>
-            <span style={{ color: '#6ee7b7' }}>6. ChromaDB</span>
+            <span style={{ color: '#6ee7b7' }}>6. Qdrant</span>
             {' \u2192 cosine search with '}
             <span style={{ color: '#f9a8d4' }}>where filter</span>
             {' \u2192 only FL action_limits chunks (~100-500ms)'}
@@ -853,7 +853,7 @@ export function RagView() {
           </div>
           <div>
             <span style={{ color: '#c4b5fd' }}>11. Return</span>
-            {' \u2192 context block injected into Claude prompt (grounded in 1.03M chunks)'}
+            {' \u2192 context block injected into Claude prompt (grounded in 1.44M chunks)'}
           </div>
         </div>
 
