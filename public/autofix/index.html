@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PURELI-152 Autofix Pipeline</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  html,body { margin:0; padding:24px; background:#0b1220; color:#e6edf3; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  h1 { font-size: 20px; margin: 0 0 4px 0; letter-spacing: 0.2px; }
+  .sub { color:#8b949e; font-size: 13px; margin-bottom: 16px; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size: 12px; margin-top: 12px; color:#c9d1d9; }
+  .chip { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius: 999px; border:1px solid #30363d; }
+  .sw { width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .mermaid { background: #0d1117; border:1px solid #30363d; border-radius: 12px; padding: 24px; }
+</style>
+</head>
+<body>
+<h1>PURELI-152 Autofix Pipeline</h1>
+<div class="sub">cron 13,33,53 * * * *  ·  Kaycha-Labs/purelimsai  ·  KaychaExec pm_tasks as work queue</div>
+
+<div class="mermaid">
+flowchart TD
+  Start(["cron fires<br/>(or manual prompt)"]):::start
+
+  Start --> Q0{"Step 0<br/>re-queued IN_REVIEW<br/>in BACKLOG with prior PR?"}
+  Q0 -->|yes| PRget["get_pull_request"]
+  PRget --> PRstate{PR state}
+  PRstate -->|open &amp; unmerged| MergeFirst["comment:<br/>'merge PR first'<br/>leave in BACKLOG"]:::action
+  PRstate -->|merged &amp; live| AlreadyLive["comment:<br/>'already deployed,<br/>say what's wrong'<br/>set IN_REVIEW"]:::action
+  MergeFirst --> Loop
+  AlreadyLive --> Loop
+
+  Q0 -->|no| Q1{"Step 1<br/>get oldest BACKLOG task"}
+  Q1 -->|empty| Idle([exit idle]):::idle
+  Q1 -->|task found| Comments["Step 1B<br/>read last 5 comments"]
+
+  Comments --> Repeat{"≥2 prior [AUTOFIX]<br/>comments?"}
+  Repeat -->|yes| Debug["consult_debug<br/>(deepseek-reasoner)"]:::consult
+  Repeat -->|no| Preserve
+  Debug --> Preserve["Step 2<br/>preserve original description<br/>as pm_task_comment"]
+
+  Preserve --> Verify["schema-verify columns<br/>information_schema +<br/>pg_get_constraintdef<br/>— no guessing"]:::guard
+
+  Verify --> Classify{"Step 3<br/>classify"}
+  Classify -->|bug / feature| CodePath
+  Classify -->|pure data| DataPath
+  Classify -->|migration needed<br/>or domain decision| BlockPath
+
+  subgraph CodePath ["Code path (Step 4A/4B)"]
+    direction TB
+    Branch["git switch -c<br/>autofix/&lt;id8&gt;-&lt;kebab&gt;"]
+    Edit["edit files<br/>— never push origin main"]
+    TSC["pnpm tsc --noEmit<br/>filtered to changed files"]
+    CommitPush["commit + push -u origin"]
+    PR["mcp__github__create_pull_request<br/>base = main"]
+    Branch --> Edit --> TSC --> CommitPush --> PR
+  end
+
+  subgraph DataPath ["Data-mutation path"]
+    direction TB
+    Check{"narrow?<br/>idempotent?<br/>documented?"}
+    Escalate["PushNotification<br/>pause until sign-off"]:::escalate
+    Mutate["execute_sql on PureLIMS<br/>RETURNING to verify"]
+    Check -->|no| Escalate
+    Check -->|yes| Mutate
+  end
+
+  subgraph BlockPath ["Block path (Step 4C)"]
+    direction TB
+    BlockedSet["UPDATE status='BLOCKED'<br/>description = full<br/>completion prompt"]:::blocked
+  end
+
+  CodePath --> FlipIR
+  DataPath --> FlipIR
+  BlockPath --> Loop
+
+  FlipIR["Step 5<br/>UPDATE status='IN_REVIEW'<br/>description = what shipped<br/>+ PR link + commit"]:::review
+  FlipIR --> LogComment["INSERT pm_task_comment<br/>'[AUTOFIX] Shipped PR #N'"]
+  LogComment --> DocsQ{"user-facing<br/>behavior change?"}
+  DocsQ -->|yes| DocsEdit["Step 5b<br/>edit /app/docs pages"]
+  DocsQ -->|no| Loop
+  DocsEdit --> Loop
+
+  Loop["Step 6<br/>loop to next BACKLOG"] --> Q1
+
+  %% Human lane
+  subgraph Human ["Human-only lane"]
+    direction LR
+    Review["review PR"]:::human
+    Merge["merge PR"]:::human
+    Deploy["Netlify<br/>auto-deploy"]:::human
+    Verify2["verify on<br/>lims.purelims.ai"]:::human
+    Done["flip status = DONE"]:::human
+    Review --> Merge --> Deploy --> Verify2 --> Done
+  end
+
+  PR -.awaits.-> Review
+  Mutate -.paired with PR.-> Review
+
+  %% Guards
+  subgraph Guards ["Guards — enforced every cycle"]
+    direction TB
+    G1["feature branch + PR only<br/>— harness blocks main push"]:::guard
+    G2["current_tenant_id → 42501<br/>empty list fallback, never 500"]:::guard
+    G3["kAI links = short human ids<br/>(sample_identifier / work_order_id)"]:::guard
+    G4["destructive / rollback<br/>→ pause + PushNotification"]:::guard
+    G5["no migrations, CI, package.json,<br/>.env edits in autofix"]:::guard
+  end
+
+  classDef start fill:#1f6feb,stroke:#1f6feb,color:#fff,font-weight:bold
+  classDef idle fill:#2d333b,stroke:#6e7681,color:#c9d1d9
+  classDef action fill:#1c2128,stroke:#30363d,color:#c9d1d9
+  classDef consult fill:#3c2e53,stroke:#8957e5,color:#d2a8ff
+  classDef guard fill:#3d2e10,stroke:#d29922,color:#f2cc60
+  classDef review fill:#0d3e20,stroke:#3fb950,color:#7ee787
+  classDef escalate fill:#4a1f1f,stroke:#f85149,color:#ff7b72
+  classDef blocked fill:#4a1f1f,stroke:#f85149,color:#ff7b72
+  classDef human fill:#0b2a4a,stroke:#58a6ff,color:#cae8ff
+</div>
+
+<div class="legend">
+  <span class="chip"><span class="sw" style="background:#1f6feb"></span>cron trigger</span>
+  <span class="chip"><span class="sw" style="background:#d29922"></span>guard / invariant</span>
+  <span class="chip"><span class="sw" style="background:#8957e5"></span>LLM consult (deepseek)</span>
+  <span class="chip"><span class="sw" style="background:#3fb950"></span>pipeline completion (IN_REVIEW)</span>
+  <span class="chip"><span class="sw" style="background:#f85149"></span>pause / BLOCKED / escalate</span>
+  <span class="chip"><span class="sw" style="background:#58a6ff"></span>human-only</span>
+</div>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose',
+    themeVariables: { fontFamily: 'ui-sans-serif, system-ui, -apple-system, sans-serif' },
+    flowchart: { curve: 'basis', padding: 16, nodeSpacing: 40, rankSpacing: 60 }
+  });
+</script>
+</body>
+</html>
