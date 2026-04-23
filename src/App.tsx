@@ -61,6 +61,13 @@ export default function App() {
                 {tab.label}
               </button>
             ))}
+            <a
+              href="/autofix/"
+              className="px-4 py-2 text-xs font-medium rounded transition-all duration-200 cursor-pointer text-textDim hover:text-textBright hover:bg-border/50 border border-transparent"
+            >
+              <span className="mr-1.5">⚙</span>
+              Autofix
+            </a>
           </nav>
         </div>
       </header>
